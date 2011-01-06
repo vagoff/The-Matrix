@@ -1,0 +1,4 @@
+urweb -debug $1
+astyle --style=bsd /tmp/webapp.c
+cat /tmp/webapp.c > $1.c
+#indent -gnu < /tmp/webapp.c > $1.c

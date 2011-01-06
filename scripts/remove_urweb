@@ -1,0 +1,4 @@
+rm -rf /usr/local/share/emacs/site-lisp/urweb-mode
+rm -rf /usr/local/lib/urweb/
+rm -rf /usr/local/include/urweb/
+rm -rf /usr/local/bin/urweb

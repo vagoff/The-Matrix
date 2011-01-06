@@ -1,0 +1,3 @@
+cp -p $1.ur $2.ur
+cp -p $1.urs $2.urs
+cp -p $1.urp $2.urp
