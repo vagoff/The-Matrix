@@ -5,7 +5,7 @@ structure Base = struct
     type int = Basis.int
     type string = Basis.string
 
-    fun err msg = error <xml>{[msg]}</xml>
-    val fixme : t ::: Type -> t = err "unimplemented"
+    fun error [a ::: Type] (msg : string) : a = Basis.error <xml>{[msg]}</xml>
+    val fixme [a ::: Type] : a = error "unimplemented"
 
 end

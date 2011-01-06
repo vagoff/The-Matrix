@@ -1,6 +1,6 @@
 structure List0 = struct
 
-con list0 e = list e
+con list0 = list
 
 fun rev [e ::: Type] (xs : list0 e) (ys : list0 e) : list0 e =
     case xs of
@@ -51,13 +51,17 @@ fun repeati [t ::: Type] n (f : int -> t) =
 	repeat' n []
     end
 
-
-(*
-fun foldlmap f l s =
+fun foldlMapRev [a ::: Type] [b ::: Type] [s ::: Type] (f : a -> s -> (b,s)) (s : s) (xs : list a) (ys : list b) : (list b,s) =
     let
-	fun process ls =
-	    case ls of
-		x :: xs => f x s :: process
-		*)
-
-end
+	fun proc xs ys s =
+	    case xs of
+		[] => (rev ys, s)
+	      | x' :: xs' =>
+		    let
+			val (y,s') = f x' s
+		    in
+			proc xs' (y :: ys) s'
+		    end
+    in
+	proc xs ys s
+    end

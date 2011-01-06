@@ -1,4 +1,12 @@
+dbms mysql
+database test
+sql grid.sql
+
 base
-listbox
+tuple
+list0
+list1
+compare
+sort
 matrix
 grid
