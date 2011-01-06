@@ -1,21 +1,13 @@
-structure Listbox = struct
+structure List0 = struct
 
-fun rev [e ::: Type] (xs : list e) (ys : list e) =
-    let
-	fun rev' xs ys =
-	    case xs of
-		[] => ys
-	      | x :: xs => rev' xs (x :: ys)
-    in
-	rev' xs ys
-    end
+open Tuple
 
-(* bug in Ur
-fun rev [e ::: Type] (xs : list e) (ys : list e) =
+con list1 e = e * list e
+
+fun rev [e ::: Type] (xs : list1 e) (ys : list1 e) : list1 e = case 
     case xs of
 	[] => ys
-      | x :: xs => @@rev [e] xs (x :: ys)
-*)
+      | x :: xs => rev xs (x :: ys)
 
 fun reverse [e ::: Type] (l : list e) = rev l ([] : list e)
 

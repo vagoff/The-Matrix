@@ -1,3 +1,8 @@
+fun rev0 [e ::: Type] (xs : list e) (ys : list e) =
+    case xs of
+	x :: xs => []
+      | [] => ys
+
 fun rev1 [e ::: Type] (xs : list e) (ys : list e) =
     let
 	fun rev1' xs ys =
@@ -8,10 +13,6 @@ fun rev1 [e ::: Type] (xs : list e) (ys : list e) =
 	rev1' xs ys
     end
 
-fun rev2 [e ::: Type] (xs : list e) (ys : list e) =
-    case xs of
-	[] => ys
-      | x :: xs => rev2 xs (x :: ys)
 
 fun rev3 [e ::: Type] (xs : list e) (ys : list e) =
     case xs of

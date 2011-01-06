@@ -9,8 +9,8 @@ signature MATRIX = sig
 end
 
 structure Matrix : MATRIX = struct
-    open Listbox
-    con m = fn t => { Cols: int, Rows: int, Data: list (list t) }
+    open List0
+    con m = fn t => { Cols: int, Rows: int, Data: list0 (list0 t) }
     type index = int (* [!] embed in m? *)
     type folder = e ::: Type -> state ::: Type -> ((index * index) -> e -> state -> state) -> state -> m e -> state
     fun new [e] filler (cols,rows) = { Cols = cols, Rows = rows, Data = repeat rows (repeat cols (filler ())) }
@@ -22,4 +22,3 @@ end
 structure MatrixTest = struct
     val create : int = Matrix.foldForward (fn (i,j) e s => s + e) 0 (Matrix.new (2,2))
 end
-
