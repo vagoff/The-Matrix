@@ -5,12 +5,15 @@ structure List1 = struct
 (* [!] bug in Ur/Web! *)
 (* con list0  = List0.list0 *)
 con list0 = list
-
 con list1 e = e * list0 e
 
 (* local *)
 
 fun convert [e ::: Type] ((x,xs) : list1 e) : list0 e = x :: xs
+
+(* public *)
+
+fun concat [e ::: Type] ((x,xs) : list1 e) (ys : list1 e) : list1 e = (x, List0.concat xs (convert ys))
 
 fun rev [e ::: Type] (l1 : list1 e) (l2 : list1 e) : list1 e =
     case List0.rev (convert l1) (convert l2) of

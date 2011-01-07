@@ -2,6 +2,16 @@ structure List0 = struct
 
 con list0 = list
 
+fun concat [e ::: Type] (xs : list0 e) (ys : list0 e) : list0 e =
+    let
+	fun cat xs =
+	    case xs of
+		[] => ys
+	      | x :: xs => x :: cat xs
+    in
+	cat x
+    end
+
 fun rev [e ::: Type] (xs : list0 e) (ys : list0 e) : list0 e =
     case xs of
 	[] => ys
@@ -65,3 +75,5 @@ fun foldlMapRev [a ::: Type] [b ::: Type] [s ::: Type] (f : a -> s -> (b,s)) (s 
     in
 	proc xs ys s
     end
+
+end

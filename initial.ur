@@ -6,12 +6,15 @@ init
 
     ts = 
 
+    add_type "quality" [ "poor", "moderate", "best" ]
+    add_type "bool" [ "yes", "no" ]
+
     add_feature_group "Type System"
     
-        [ "type-level functions"
-        , "type-level records"
-        , "higher-order types"
-        , "second-order types"
+        [ ("ty-fun", "type-level functions")
+        , ("ty-rec", "type-level records")
+        , ("hot", "higher-order types")
+        , ("sot", "second-order types")
         ]
 
     add_type "status" [ "academic/poc", "commercial", "not released", "not widely used" ]
@@ -46,7 +49,7 @@ init
 	, "curl", "rebol",
 	, "lustre", "esterel"
 	, "groovy", "scala", "falcon"
-	, "sml"
+	, "sml", "vault"
 	]
 
     add_more_langs [ "ada", "d", "c", "c++", "c#" ]
@@ -123,7 +126,7 @@ init
 			, ("full-labels", "full features labels")
 			, ("loop-labels", "labels in break and coninue statement")
 			, ("destr-ass", "destructuring assignment (pattern at left hand side)")
-			, ("multi-ass", multiple assignment (a = b = c)")
+			, ("multi-ass", "multiple assignment (a = b = c)")
 			, ("concat", "concatenative")
 			, ("homo", "homoiconic")
 			]

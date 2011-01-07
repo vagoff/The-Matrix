@@ -2,6 +2,8 @@ dbms mysql
 database test
 sql grid.sql
 
+library mouse
+
 base
 tuple
 list0
