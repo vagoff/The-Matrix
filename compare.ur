@@ -2,22 +2,6 @@
 
 (* uses: ord, strsub, strlen *)
 
-signature COMPARE = sig
-
-    datatype order = LT | EQ | GT
-
-    class compare
-
-    val compare : t ::: Type -> compare t -> t -> t -> order
-
-    val compare_int : compare int
-    val compare_float : compare float
-    val compare_string : compare string
-    val compare_list : a ::: Type -> compare a -> compare (list a)
-end
-
-structure Compare : COMPARE = struct
-
     datatype order = LT | EQ | GT
 
     con compare t = t -> t -> order
@@ -77,4 +61,10 @@ structure Compare : COMPARE = struct
 	in
 	    comp xs ys
 	end
-end
+
+    fun invertOrder o =
+	case o of
+	    EQ => EQ
+	  | LT => GT
+	  | GT => LT
+

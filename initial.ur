@@ -1,4 +1,12 @@
 (* todo: track various implementations separately from languages *)
+(*
+    , Authors : option
+    , LicenseName : option desc
+    , LicenseText : option desc
+    , LastRealeaseDate : time_stamp
+    , CPAN url
+    , planet RSS feed url (with type)
+*)
 
 init
     val langs =

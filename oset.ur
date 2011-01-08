@@ -1,17 +1,5 @@
 (* ordered set *)
 
-signature OSET = sig
-    open Compare (* [!] use functor? *) (* [!] use functor instead of class? *)
-    con oset : Type -> Type
-    val remove : e ::: Type -> compare e -> e -> oset e -> oset e
-    val insertAfter : e ::: Type -> compare e -> e -> e -> oset e -> oset e
-    val insertBefore : e ::: Type -> compare e -> e -> e -> oset e -> oset e
-    val append : e ::: Type -> compare e -> e -> oset e -> oset e
-    val prepend : e ::: Type -> compare e -> e -> oset e -> oset e
-end
-
-structure Oset : OSET = struct
-    
     con oset = List0.list0
 
     fun remove [e] cmp e s =
@@ -56,4 +44,6 @@ structure Oset : OSET = struct
     fun prepend [e] cmp e s = e :: s
     fun append [e] cmp e s = List0.concat s (e :: [])
 	
-end
+    fun sort [e] cmp a b = Sort.sort a b
+    fun sortBy [e] fn a b = Sort.sortBy fn a b
+

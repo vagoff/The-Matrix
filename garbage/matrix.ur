@@ -1,17 +1,8 @@
-signature MATRIX = sig
-    con m :: Type -> Type
-    type index = int (* [!] embed in m? *)
-    type folder = e ::: Type -> state ::: Type -> ((index * index) -> e -> state -> state) -> state -> m e -> state
-    val buildFromList : e ::: Type -> list ((index * index) * e) -> m e
-    val new : e ::: Type -> (unit -> e) -> index * index -> m e
-    val foldForward : folder
-    val foldBackward : folder
-    val size : e ::: Type -> m e -> (int * int)
-end
-
-structure Matrix : MATRIX = struct
     open List0
-    con m = fn t => { Cols: int, Rows: int, Data: list0 (list0 t) }
+    open Base
+    open Sort
+
+    con m t = { Cols: int, Rows: int, Data: list0 (list0 t) }
     type index = int (* [!] embed in m? *)
     type folder = e ::: Type -> state ::: Type -> ((index * index) -> e -> state -> state) -> state -> m e -> state
 
@@ -19,13 +10,13 @@ structure Matrix : MATRIX = struct
     fun foldForward [e] [state] f s m = foldli (fn j row s => foldli (fn i e s => f (i,j) e s) s row) s m.Data
     fun foldBackward [e] [state] f s m = foldri (fn j row s => foldri (fn i e s => f (i,j) e s) s row) s m.Data
 
-    fun buildFromList [e] l =
+    fun buildFromList [e] ls =
 	let
 	    val sorted = sortBy (fn ((i,j),_) ((n,m),_) =>
-		case cmp i n of
-		    EQ => cmp j m
+		case compare i n of
+		    EQ => compare j m
 		  | LT => LT
-		  | GT => GT) l
+		  | GT => GT) ls
 
 	    fun build ls rn row res =
 	        case ls of
@@ -35,15 +26,13 @@ structure Matrix : MATRIX = struct
 			    build rest rn (a :: row) res
 		        else
 			    build rest (rn + 1) [] (reverse row :: res)
+	    val result = build sorted 0 [] []
 	in
-	    build sorted 0 [] []
+	    { Rows = length result
+	    , Cols = max 0 (mp length result)
+	    , Data = result
+	    }
 	end
 
     fun size [e] {Cols=c,Rows=r,...} = (c,r)
 
-
-end
-
-structure MatrixTest = struct
-    val create : int = Matrix.foldForward (fn (i,j) e s => s + e) 0 (Matrix.new (2,2))
-end

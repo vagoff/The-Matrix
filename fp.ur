@@ -1,31 +1,24 @@
-signature FP = sig
-    fun st : s ::: Type -> z ::: Type -> (s -> (a,s)) -> (a -> s -> z) -> (s -> z)
-    fun sts : s ::: Type -> list (a -> s -> (a,s)) -> (a -> s -> (a,s))
-    fun seq : s ::: Type -> list (s -> s) -> (s -> s)
-end
-structure Fp : FP = struct
-
-fun st [s] [z] f g =
+fun composest [s] [a] [z] f g s =
     let
         val (a,s') = f s
     in
-	g s'
+	g a s'
     end
 
-fun sts [s] fs a s =
+fun composests [s] [a] (fs : list (a -> s -> a * s)) (a : a) (s : s) : a * s =
     case fs of
 	[] => (a,s)
       | f :: fs' =>
         let
     	    val (a',s') = f a s
     	in
-    	    seq fs' a' s'
+    	    sts fs' a' s'
     	end
 
-fun seq [s] fs s =
+fun seq [s] (fs : list (s -> s)) (s : s) : s =
     case fs of
 	[] => s
       | f :: fs' => seq fs' (f s)
 
-end
-
+fun rset [rest] [nm] [t] v [[nm] ~ rest] r = (r -- nm) ++ { nm = v } (* [!] inefficient *)
+fun rupd [rest] [nm] [t] f [[nm] ~ rest] r = (r -- nm) ++ { nm = f r.nm } (* [!] inefficient *)

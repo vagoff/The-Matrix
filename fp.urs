@@ -1,0 +1,5 @@
+val composest : s ::: Type -> a ::: Type -> z ::: Type -> (s -> a * s) -> (a -> s -> z) -> (s -> z)
+val composests : s ::: Type -> a ::: Type -> list (a -> s -> a * s) -> (a -> s -> a * s)
+val seq : s ::: Type -> list (s -> s) -> (s -> s)
+val rset : rest ::: {Type} -> nm ::: Name -> t ::: Type -> t -> [[nm] ~ rest] => $(rest ++ [nm = t]) -> $(rest ++ [nm = t]) (* functional record update, set version *)
+val rupd : rest ::: {Type} -> nm ::: Name -> t ::: Type -> (t -> t) -> [[nm] ~ rest] => $(rest ++ [nm = t]) -> $(rest ++ [nm = t]) (* functional record update, modify version *)

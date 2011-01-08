@@ -2,40 +2,43 @@
 
 open Compare
 
-fun sort [e ::: Type] (cmp : compare) (ls : list e) : list e =
+fun sortBy [e] (cmpFn : e -> e -> order) (ls : list e) : list e =
     let
 	fun breakIntoPairs xs =
 	    case xs of
 	        [] => []
-	      | x :: [] => x :: []
+	      | x :: [] => (x :: []) :: []
 	      | x1 :: x2 ::xs =>
 		    let
 			val pair =
-			    case cmp x1 x2 of
+			    case cmpFn x1 x2 of
 			        GT => x2 :: x1 :: []
 			      | _ => x1 :: x2 :: []
 		    in
 			pair :: breakIntoPairs xs
 		    end
 
-	fun mergePairsLoop ls =
+	and mergePairsLoop ls =
 	    case ls of
-		_ :: _ :: _ => mergePairsLoop (mergeListPairs xxs)
-	      | _ => ls
+	        [] => []
+	      | xs :: [] => xs
+	      | _ :: _ :: _ => mergePairsLoop (mergeListPairs ls)
 	
-	fun mergeListPairs ls =
+	and mergeListPairs ls =
 	    case ls of
 		xs :: ys :: rest => mergeTwoLists xs ys :: mergeListPairs rest
 	      | _ => ls
 	
-	fun mergeTwoLists xs ys =
+	and mergeTwoLists xs ys =
 	    case (xs,ys) of
 		([],_) => xs
 	      | (_,[]) => ys
 	      | (x :: xs, y :: ys) =>
-		    case cmp x y of
+		    case cmpFn x y of
 			GT => y :: mergeTwoLists (x :: xs) ys
 		      | _ => x :: mergeTwoLists xs (y :: ys)
     in
 	mergePairsLoop (breakIntoPairs ls)
     end
+
+fun sort [e] (cmp : compare e) (ls : list e) : list e = sortBy compare ls

@@ -1,0 +1,1 @@
+val fieldsOf (fields ::: {Type}) (tbl :: $fields)

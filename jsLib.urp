@@ -1,0 +1,12 @@
+ffi jsLib
+script jsLib
+clientOnly JsLib.jsNewObj
+clientOnly JsLib.jsIsEmpty
+clientOnly JsLib.jsInsert
+clientOnly JsLib.jsLookup
+clientOnly JsLib.jsIsNull
+jsFunc JsLib.jsNewObj=jsNewObj
+jsFunc JsLib.jsIsEmpty=jsIsEmpty
+jsFunc JsLib.jsInsert=jsInsert
+jsFunc JsLib.jsLookup=jsLookup
+jsFunc JsLib.jsIsNull=jsIsNull

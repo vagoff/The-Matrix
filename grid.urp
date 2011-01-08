@@ -1,14 +1,16 @@
+library mouse
+library jsLib
 dbms mysql
 database test
 sql grid.sql
 
-library mouse
-
 base
+fp
 tuple
+compare
 list0
 list1
-compare
 sort
-matrix
+dict
+schema
 grid
