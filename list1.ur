@@ -61,10 +61,5 @@ fun repeati [t ::: Type] n (f : int -> t) =
     else
 	Base.error "Invalid argument n in List1.repeat"
 
-(*
-fun foldlmap f l s =
-    let
-	fun process ls =
-	    case ls of
-		x :: xs => f x s :: process
-		*)
+fun mapX [e] (f : e -> xbody) (xs : list1 e) : xbody = L0.mapX f (convert xs)
+fun foldMapX [e] [s] (f : e -> xbody) (st : s) (xs : list0 e) : xbody = L0.foldMapX f st (convert xs)

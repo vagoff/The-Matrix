@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if [ "$#" != "0" -o "$cmd" = "" -o "$tab" = "" ]
+then
+	echo "$0: this script is not intended to be called standalone" 1>&2
+	exit 1
+fi
+
+if [ ! -d "scripts" ]
+then
+	echo "$0: script seems to be called from wrong location"
+	exit 2
+fi
+
+doit() {
+	for i in "$*" # there is no for loop
+	do
+		cat "${i}" > "${i}.tmp"
+		"$cmd" -t "$tab" < "${i}.tmp" > "${i}"
+		rm "${i}.tmp"
+	done
+}
+
+find jslib -name '*.js' | xargs -n 1 doit
+find -name '*.ur*' | xargs -n 1 doit

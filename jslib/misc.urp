@@ -1,0 +1,4 @@
+ffi misc
+script misc
+clientOnly Misc.jsIsNull
+jsFunc Misc.jsIsNull=jsIsNull

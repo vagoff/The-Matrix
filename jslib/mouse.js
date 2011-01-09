@@ -1,7 +1,7 @@
 $(document).ready(function() {
     var globalMouseState = { x: 0, y: 0, buttons: 0 };
 
-    $(document).mousecapture({
+    $(document).mousecapture({ /* this is not really capture so calm down */
 	down: function(e, s) {
 	    globalMouseState.x = e.pageX
 	    globalMouseState.y = e.pageY

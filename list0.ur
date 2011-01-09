@@ -104,3 +104,28 @@ fun foldlMapRev [a ::: Type] [b ::: Type] [s ::: Type] (f : a -> s -> b * s) (s 
     in
 	proc xs ys s
     end
+
+fun mapX [e] (f : e -> xbody) (xs : list0 e) : xbody =
+	let
+		fun proc xs =
+			case xs of
+				None => <xml/>
+			  | x :: xs' => <xml>{f x}{proc xs'}</xml>
+	in
+		proc xs
+	end
+
+fun foldMapX [e] [s] (f : e -> xbody) (st : s) (xs : list0 e) : xbody =
+	let
+		fun loop xs st =
+			case xs of
+				None => <xml/>
+			  | x :: xs' =>
+			  	let
+			  		val (x',st') = f st
+			  	in
+			  		 <xml>{x'}{loop xs' st'}</xml>
+			  	end
+	in
+		loop xs st
+	end

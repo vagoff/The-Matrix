@@ -1,0 +1,3 @@
+tab=8
+cmd=unexpand
+. scripts/doit

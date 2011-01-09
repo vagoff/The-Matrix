@@ -8,3 +8,7 @@ type count1 = int
 
 fun error [a ::: Type] (msg : string) : a = Basis.error <xml>{[msg]}</xml>
 val fixme [a ::: Type] : a = error "unimplemented"
+
+val toString = show
+
+con serialized (a :: Type) = string

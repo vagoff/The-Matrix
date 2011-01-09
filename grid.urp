@@ -1,5 +1,6 @@
-library mouse
-library jsLib
+library jslib/misc
+library jslib/map
+library jslib/mouse
 dbms mysql
 database test
 sql grid.sql

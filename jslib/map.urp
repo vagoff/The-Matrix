@@ -1,0 +1,12 @@
+ffi map
+script map
+clientOnly Map.jsNewObj
+clientOnly Map.jsIsEmpty
+clientOnly Map.jsInsert
+clientOnly Map.jsLookup
+clientOnly Map.jsRemove
+jsFunc Map.jsNewObj=jsNewObj
+jsFunc Map.jsIsEmpty=jsIsEmpty
+jsFunc Map.jsInsert=jsInsert
+jsFunc Map.jsLookup=jsLookup
+jsFunc Map.jsRemove=jsRemove

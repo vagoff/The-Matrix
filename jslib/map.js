@@ -4,7 +4,7 @@ function jsNewObj() {
 
 function jsIsEmpty(a) {
     for (p in a)
-	return false
+        return false
     return true
 }
 
@@ -17,6 +17,7 @@ function jsLookup(m,k) {
     return m[k]
 }
 
-function jsIsNull(a) {
-    return a === null
+functionjsRemove(k,m) {
+    delete m[k]
+    return m
 }

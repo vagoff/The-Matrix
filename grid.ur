@@ -1,21 +1,15 @@
 (* [!] move to the libs *)
 
-val toString = show
-
+open Base
 val fixme : transaction page = return <xml>fixme</xml>
-
-con serialized (a :: Type) = string (* [!] move out *)
-
-datatype format = YAML | XML | CVS | SXML
-
 con list0 = List0.list0
 con list1 = List1.list1
 type vec = Oset.oset
-type V = Oset
-open List0
+structure V = Oset
 structure M = Matrix
 open Schema
-open Base
+
+datatype format = YAML | XML | CVS | SXML
 
 (* todo:
  - call languages all lowercase?
@@ -81,23 +75,6 @@ fun feedback () = fixme
 fun loadMatrixAccordingToTheView () = 
 *)
 
-signature MATRIX = sig
-	type matrix
-	val empty : unit -> matrix
-	val lookup : matrix -> (lang_id * feature_id) -> cell
-	val update : (lang_id * feature_id) -> cell -> matrix -> matrix
-end
-
-structure Matrix : MATRIX = struct
-	structure D = Dict.ClientDict
-	type storage = dict cell
-	fun toString : (lang_id, feature_id) -> string = (toString lid ^ ":" ^ toString fid)
-	fun empty () = D.empty
-	fun lookup m pos = D.lookup m (toString pos)
-	fun update (lid,fid) cell m = D.insert (toString pos) cell m
-end
-
-structure M = Matrix
 
 fun loadEntireMatrix () =
 	(lids,fids,m) <- query
@@ -181,7 +158,16 @@ type view_state =
 
 type coord = int
 type pos = { Left : coord, Top : coord }
-datatype mouse_event_type = MouseDown | MouseUp | MouseMove | MouseOutDoc
+datatype mouse_event_type = MouseDown | MouseUp | MouseMove | CancelDragging
+type mouse_buttons_state =
+	{ LeftPressed : bool
+	, RightPressed : bool
+	, MiddlePressed : bool
+	}
+type mouse_state =
+	{ pos : pos
+	, buttons : mouse_buttons_state
+	}
 type mouse_event =
 	{ Pos : pos
 	, Type : mouse_event_type
@@ -197,6 +183,9 @@ type dragging_state =
 	{ Lmb : dnd_state
 	, Rmb : dnd_state
 	}
+
+fun viewMatrix () = 
+	let
 
 	val cfg =
 		{ DragThresholdPixels = 3
@@ -217,21 +206,21 @@ type dragging_state =
 							rset State Dragging st
 						else
 							st
-				  | (Dragging,MouseOutDoc) => cancelDragging (rset State Idle st)
+				  | (Dragging,CancelDragging) => cancelDragging (rset State Idle st)
 				  | (Dragging,MouseUp) => completeDragging st
 				  | _ => st
 		in
 			rset Pos ev.Pos (dndStateMachine st)
 		end
 
-	fun sort d v f =
+	fun sort dir vec by =
 		let
-			fun f' =
+			fun by' =
 				case d of
-					Ascending => f
-				  | Descending => fn a b => invertOrder (f a b)
+					Ascending => by
+				  | Descending => fn a b => invertOrder (by a b)
 		in
-			V.sortBy f' v
+			V.sortBy by' vec
 		end
 
 	fun updateField r nm f = rupd nm f r (* [!] to lib? *)
@@ -262,26 +251,68 @@ type dragging_state =
 					  | LT => LT
 					  | GT => GT))
 
-	fun touch
+	fun whichButtons w =
+		{ Left = w % 2 <> 0
+		, Middle = (w / 2) % 2 <> 0
+		, Right = (w / 4) % 2 <> 0
+		}
 
-whichButtons w
-	 { Left = w % 2 <> 0
-	 , Middle = (w / 2) % 2 <> 0
-	 , Right = (w / 4) % 2 <> 0
-	 }
+	fun locateMouse =
+		x <- getCurrentMouseX
+		y <- getCurrentMouseY
+		return { Left = x, Top = y }
 
-<td onmouseup={touch TopSide coln (ButtonUp LeftButton)}>
-<td onmousedown={touch TopSide coln (ButtonDown LeftButton)}>
-<td onmouseover={touch TopSide coln (MoveOver (0,0))}>
+	fun processButton nm f st
+		case (mst0.nm,mst1.nm) of
+			(true,false) => f MouseUp st
+		  | (false,true) => f MouseDown st
+		  | _ => st
 
-<td onmouseup={touch LeftSide rown (ButtonUp LeftButton)}>
-<td onmousedown={touch LeftSide rown (ButtonDown LeftButton)}>
-<td onmouseover={touch LeftSide rown (MoveOver (0,0))}>
-*)
+	fun sendCancelDragging =
+		dndEventProcessor CancelDragging st
+
+	fun onMouseEvent id =
+		pos <- locateMouse
+		w <- currentMouseButtons
+		whichButtons w
+		st <- return (processButton Left dndEventProcessor dndSt)
+		st <- return (processButton Right dndEventProcessor dndSt)
+		if btns.Middle then sendCancelDragging
+		st <- return (processButton Left dndEventProcessor dndSt)
+		dndEventProcessor st id btn
+
+	(rowid,colid) <- return if vst.Transposed then (LID lid, FID fid) else (FID fid, LID lid)
+	
+	fun renderTop =
+	
+	fun renderBody =
+	
+	fun renderCell =
+
+		mapX (fn cell =>
+			<xml><td onclick={editCell cellAddr}>
+			</xml>)
+			(V.toList vec)
+
+	in
+	return <xml></xml>
+	end
+
+top
+<td onmouseup={onMouseEvent colid}
+    onmousedown={onMouseEvent colid}
+    onmouseover={onMouseEvent colid>
+
+left
+<td onmouseup={onMouseEvent rowid}
+    onmousedown={onMouseEvent rowid}
+    onmouseover={onMouseEvent rowid}>
+
+<body onmouseout={sendCancelDragging}>
 
 val fixme = return <xml>fixme</xml>
 
-fun main () = return <xml></xml>
+fun main () = viewMatrix ()
 
 fun views viewId = fixme
 
