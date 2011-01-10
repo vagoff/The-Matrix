@@ -20,5 +20,7 @@ fun seq [s] (fs : list (s -> s)) (s : s) : s =
 	[] => s
       | f :: fs' => seq fs' (f s)
 
+fun seq' [s] (s : s) (fs : list (s -> s)) : s = seq fs s
+
 fun rset [rest] [nm] [t] v [[nm] ~ rest] r = (r -- nm) ++ { nm = v } (* [!] inefficient *)
 fun rupd [rest] [nm] [t] f [[nm] ~ rest] r = (r -- nm) ++ { nm = f r.nm } (* [!] inefficient *)

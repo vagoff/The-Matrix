@@ -1,0 +1,7 @@
+com : st ::: Type -> (st -> st) -> (st -> st) -> (st -> st)
+com [st] f g st = f (g st)
+a : transaction page
+b : string -> transaction page
+c : transaction page
+combined st = st; a; b; c "hello!"
+run = combined (return unit)

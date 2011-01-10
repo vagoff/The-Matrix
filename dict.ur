@@ -32,4 +32,5 @@ structure ClientDict : DICT = struct
 				None
 		    else
 				Some ret
+		end
 end

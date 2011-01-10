@@ -106,7 +106,7 @@ fun loadEntireMatrix () =
 				, M.insert (r.Lid,r.Fid) dval m
 				)
 			end)
-		(V.empty, V.empty, M.empty ());
+		(V.empty, V.empty, M.empty);
 
 	state <- source
 		{ Langs = lids
@@ -184,7 +184,6 @@ type dragging_state =
 	, Rmb : dnd_state
 	}
 
-fun viewMatrix () = 
 	let
 
 	val cfg =
