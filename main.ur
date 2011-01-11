@@ -1,5 +1,3 @@
-(* [!] move to the libs *)
-
 open Base
 val fixme : transaction page = return <xml>fixme</xml>
 con list0 = List0.list0
@@ -8,66 +6,7 @@ type vec = Oset.oset
 structure V = Oset
 structure M = Matrix
 open Schema
-
-datatype format = YAML | XML | CVS | SXML
-
-(* todo:
- - call languages all lowercase?
- - how to cope with languages with duplicate names?!
- - add reference to comprehensive documentation for every feature (!)
- - values as flag set
- - reCAPTCHA
- - aliased features (e.g., promises = i-vars)
-
-[!] Created : time_stamp
-and versioning
-
-lang def:
- - [!] "date of last patch in repository"
- - [!] "list of backends"
-
-to decide:
- - it is need to allow small pictures in table cells?
-*)
-
-(* abbreviation rules:
- - desc, not descr
- - feature, not attr
-*)
-
-(* important notes:
- - work best for _any_ browser! (with gradual degradation if required) // very important!
- - all language attributes must be dynamic: stop mudding lang_def!
- - Please, no references to Wikipedia! It is not source of ultimate truth but just current public opinion.
-   Even if some article in Wikipedia is perfect on the time you referenced it, it may become worse over time!
-   links to university programming language courses, google knols, Stanford's Plato, links to lecture notes in programming,
-   etc are very appreciated.
-   - has single distinct author (to whom you may send wrathy emails)
-   - author has some considerable background in subject
-*)
-
-(* primary concerns:
- - dynamically editable view
- - saved views
- - versioning and rollbacks
- - machine controlled features
- - code and urls in features
-*)
-
-(* on the second stage:
- - feedback forum like http://getsatisfaction.com (but open source and under MIT licence)
-*)
-
-(* buttons:
- - save view as ... (opens view manager)
- - new feature
- - new lang
- - look at view rate table (to select most popular view)
- - transpose view
-and mouse to edit and reorder
-*)
-
-fun feedback () = fixme
+open Fixme
 
 (* select * from (select * from a,b order by a.a,b.b) as ab left join rel on (ab.a=rel.a and ab.b=rel.b); *)
 
@@ -118,16 +57,6 @@ fun loadEntireMatrix () =
 		, DeletedFeats = V.empty
 		};
 
-	sideImage "feed1" "please give us feedback" "contactus.png" feedback
-	sideImage "feed2" "please help us improve this site" "feedback.gif" feedback
-
-	horiz_layout
-		[ <xml><button value="save view as..." onclick={fixme}></xml>
-		, <xml><button value="new attribute" onclick={fixme}></xml>
-		, <xml><button value="new language" onclick={fixme}></xml>
-		, <xml><button value="transpose views" onclick={fixme}></xml>
-		, <xml><button value="top views" onclick={fixme}></xml>
-		]
 
 datatype sort_order = Ascending | Descending
 
@@ -165,8 +94,8 @@ type mouse_buttons_state =
 	, MiddlePressed : bool
 	}
 type mouse_state =
-	{ pos : pos
-	, buttons : mouse_buttons_state
+	{ Pos : pos
+	, Buttons : mouse_buttons_state
 	}
 type mouse_event =
 	{ Pos : pos
@@ -184,6 +113,7 @@ type dragging_state =
 	, Rmb : dnd_state
 	}
 
+fun buildMainPage =
 	let
 
 	val cfg =
@@ -282,10 +212,26 @@ type dragging_state =
 
 	(rowid,colid) <- return if vst.Transposed then (LID lid, FID fid) else (FID fid, LID lid)
 	
-	fun renderTop =
-	
-	fun renderBody =
-	
+
+top
+<td onmouseup={pressCaption colid}
+    onmousedown={pressCaption colid}
+    onmouseover={pressCaption colid>
+
+left
+<td onmouseup={pressCaption rowid}
+    onmousedown={pressCaption rowid}
+    onmouseover={pressCaption rowid}>
+
+cell
+<td onmouseup={pressCell rowid colid}
+    onmousedown={pressCell rowid colid}
+    onmouseover={pressCell rowid colid>
+    
+    fun sideImage alt url proc = <xml><img {Src=url, Alt=alt, OnClick=proc}/></xml>
+
+    fun horiz_layout = mapX fn item => <xml><td>{item}</td></xml>
+
 	fun renderCell =
 
 		mapX (fn cell =>
@@ -293,28 +239,40 @@ type dragging_state =
 			</xml>)
 			(V.toList vec)
 
+	fun renderTop =
+		if st.Transposed then
+			mapX renderCaption (V.toList st.Langs)
+		else
+			mapX renderCaption (V.toList st.Feats)
+
+	fun renderBody =
+		if st.Transposed then
+		else
+			mapX (fn lid =>
+				mapX )
+				(V.toList st.Langs)
+
 	in
 	return <xml></xml>
 	end
 
-top
-<td onmouseup={onMouseEvent colid}
-    onmousedown={onMouseEvent colid}
-    onmouseover={onMouseEvent colid>
-
-left
-<td onmouseup={onMouseEvent rowid}
-    onmousedown={onMouseEvent rowid}
-    onmouseover={onMouseEvent rowid}>
-
-<body onmouseout={sendCancelDragging}>
-
-val fixme = return <xml>fixme</xml>
-
-fun main () = viewMatrix ()
-
-fun views viewId = fixme
-
-fun exports format = fixme
-
-fun search queryString = fixme
+	in
+	return
+		<xml
+			<body onmouseout={sendCancelDragging}>
+				{sideImage "feed1" "please give us feedback" "contact_us.png" Feedback.feedback}
+				{sideImage "feed2" "please help us improve this site" "feedback.gif" Feedback.feedback}
+				{horiz_layout
+					(  <xml><button value="save view as..." onclick={fixme}></xml>
+					:: <xml><button value="new attribute" onclick={fixme}></xml>
+					:: <xml><button value="new language" onclick={fixme}></xml>
+					:: <xml><button value="transpose views" onclick={fixme}></xml>
+					:: <xml><button value="top views" onclick={fixme}></xml>
+					::[])}
+				<table>
+					<dyn {Signal=renderTop}/>
+					<dyn {Signal=renderBody}/>
+				</table>
+			</body>
+		</xml>
+	end

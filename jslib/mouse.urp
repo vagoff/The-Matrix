@@ -1,6 +1,6 @@
 ffi mouse
-script extlibs/jquery.js
-script extlibs/jquery-mouse-capture-plugin/lib/jquery.mousecapture.js
+script extlib/jquery.js
+script extlib/jquery-mouse-capture-plugin/lib/jquery.mousecapture.js
 script mouse.js
 effectful Mouse.getCurrentMouseX
 effectful Mouse.getCurrentMouseY

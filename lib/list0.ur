@@ -1,3 +1,5 @@
+(* [!] check for stack overflows *)
+
 con list0 = list
 
 open Compare
@@ -23,12 +25,23 @@ fun concat [e] (xs : list0 e) (ys : list0 e) : list0 e =
 	cat xs
     end
 
+fun flatten [e] (xs : list0 (list0 e)) : list0 e = concat 
+	let
+		fun flatten' xs res =
+			case xs of
+				None => res
+			  | x :: xs' => flatten' xs' (concat x res)
+			
+	in
+		flatten' (reverse xs) []
+	end
+
 fun rev [e] (xs : list0 e) (ys : list0 e) : list0 e =
     case xs of
 	[] => ys
       | x :: xs => rev xs (x :: ys)
 
-fun reverse [e ::: Type] (l : list0 e) = rev l []
+fun reverse [e] (l : list0 e) = rev l []
 
 fun mp [a] [b] (f : a -> b) (xs : list0 a) : list0 b =
     case xs of
@@ -48,7 +61,7 @@ fun max [e] (cmp : compare e) (m : e) (ls : list0 e) : e =
 	max' m ls
     end
 
-fun foldl [e ::: Type] [s ::: Type] (f : e -> s -> s) (s : s) (l : list0 e) =
+fun foldl [e] [s] (f : e -> s -> s) (s : s) (l : list0 e) =
     let
 	fun foldl' s xs =
 	    case xs of
@@ -58,11 +71,11 @@ fun foldl [e ::: Type] [s ::: Type] (f : e -> s -> s) (s : s) (l : list0 e) =
 	foldl' s l
     end
 
-fun foldr [e ::: Type] [s ::: Type] (f : e -> s -> s) (s : s) (l : list0 e) = foldl f s (reverse l)
-fun foldli [e ::: Type] [s ::: Type] (f : int -> e -> s -> s) s (l : list0 e) = (foldl (fn e (s,i) => (f i e s, i + 1)) (s,0) l).1
-fun foldri [e ::: Type] [s ::: Type] (f : int -> e -> s -> s) s (l : list0 e) = (foldr (fn e (s,i) => (f i e s, i + 1)) (s,0) l).1
+fun foldr [e] [s] (f : e -> s -> s) (s : s) (l : list0 e) = foldl f s (reverse l)
+fun foldli [e] [s] (f : int -> e -> s -> s) s (l : list0 e) = (foldl (fn e (s,i) => (f i e s, i + 1)) (s,0) l).1
+fun foldri [e] [s] (f : int -> e -> s -> s) s (l : list0 e) = (foldr (fn e (s,i) => (f i e s, i + 1)) (s,0) l).1
 
-fun repeat [t ::: Type] n (e : t) =
+fun repeat [t] n (e : t) =
     let
 	fun repeat' n r =
 	    if n > 0
@@ -74,7 +87,7 @@ fun repeat [t ::: Type] n (e : t) =
 	repeat' n []
     end
 
-fun repeati [t ::: Type] n (f : int -> t) =
+fun repeati [t] n (f : int -> t) =
     let
 	fun repeat' n r =
 	    if n > 0
@@ -90,7 +103,7 @@ fun repeati [t ::: Type] n (f : int -> t) =
 	repeat' n []
     end
 
-fun foldlMapRev [a ::: Type] [b ::: Type] [s ::: Type] (f : a -> s -> b * s) (s : s) (xs : list a) (ys : list b) : list b * s =
+fun foldlMapRev [a] [b] [s] (f : a -> s -> b * s) (s : s) (xs : list a) (ys : list b) : list b * s =
     let
 	fun proc xs ys s =
 	    case xs of
@@ -107,25 +120,27 @@ fun foldlMapRev [a ::: Type] [b ::: Type] [s ::: Type] (f : a -> s -> b * s) (s 
 
 fun mapX [e] (f : e -> xbody) (xs : list0 e) : xbody =
 	let
-		fun proc xs =
+		fun mapX' xs res =
 			case xs of
-				None => <xml/>
-			  | x :: xs' => <xml>{f x}{proc xs'}</xml>
+				None => res
+			  | x :: xs' => mapX' xs' <xml>{res}{f x}</xml>
 	in
-		proc xs
+		mapX' xs <xml/>
 	end
 
-fun foldMapX [e] [s] (f : e -> xbody) (st : s) (xs : list0 e) : xbody =
+fun foldMapX [e] [s] (f : e -> xbody) (s : s) (xs : list0 e) : xbody * s =
 	let
-		fun loop xs st =
+		fun foldMapX' xs res st =
 			case xs of
-				None => <xml/>
+				None => (res,st)
 			  | x :: xs' =>
 			  	let
 			  		val (x',st') = f st
 			  	in
-			  		 <xml>{x'}{loop xs' st'}</xml>
+			  		 foldMapX' xs' <xml>{res}{x'}</xml> st'
 			  	end
 	in
-		loop xs st
+		foldMapX' xs <xml/> s
 	end
+
+fun depMapX [e] [s] (f : e -> xbody) (s : s) (xs : list0 e) : xbody = fst (foldMapX f s xs)
