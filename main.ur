@@ -15,8 +15,8 @@ fun loadMatrixAccordingToTheView () =
 *)
 
 
-fun loadEntireMatrix () =
-	(lids,fids,m) <- query
+fun loadRawMatrix () =
+	(ls,fs,m) <- query
 		(SELECT
 			lf.lid, lf.lcap, lf.ltit,
 			lf.fid, lf.fcap, lf.ftit,
@@ -48,15 +48,19 @@ fun loadEntireMatrix () =
 		(V.empty, V.empty, M.empty);
 
 	state <- source
-		{ Langs = lids
-		, Feats = fids
+		{ Langs = V.keys ls
+		, Feats = V.keys fs
 		, FeatsSorting = Unsorted
 		, LangsSorting = Unsorted
 		, Transposed = false
 		, DeletedLangs = V.empty
 		, DeletedFeats = V.empty
+		, LangData = ls
+		, FeatData = fs
+		, CellData = m
 		};
 
+    return state
 
 datatype sort_order = Ascending | Descending
 
@@ -72,37 +76,44 @@ fun updateSortMode col =
 		Unsorted => Sorted (col,None)
 	  | Sorted (prev,_) => Sorted (new,Some prev)
 
-datatype touch_id = LID of lang_id | FID of feature_id
-
 type view_state =
 	{ Langs : vec lang_id
 	, Feats : vec feature_id
 	, FeatsSorting : sorted lang_id
 	, LangsSorting : sorted feature_id
 	, Transposed : bool
-	, DeletedLangs : vec lang_id
+	, DeletedLangs : vec lang_id 
 	, DeletedFeats : vec feature_id
-	, Matrix : storage
+	, LangData : dict lang_id lang_data
+	, FeatData : dict feature_id feature_data
+	, Matrix : dict (lang_id * feature_id) cell_data
 	}
+
+type 
 
 type coord = int
 type pos = { Left : coord, Top : coord }
+
 datatype mouse_event_type = MouseDown | MouseUp | MouseMove | CancelDragging
+
 type mouse_buttons_state =
 	{ LeftPressed : bool
 	, RightPressed : bool
 	, MiddlePressed : bool
 	}
+
 type mouse_state =
 	{ Pos : pos
 	, Buttons : mouse_buttons_state
 	}
+
 type mouse_event =
 	{ Pos : pos
 	, Type : mouse_event_type
 	}
 
 datatype dnd_stage = Idle | Starting | Dragging
+
 type dnd_state =
 	{ State : dnd_stage
 	, Pos : pos
@@ -112,6 +123,9 @@ type dragging_state =
 	{ Lmb : dnd_state
 	, Rmb : dnd_state
 	}
+
+(* local helper *)
+datatype touch_id = LID of lang_id | FID of feature_id
 
 fun buildMainPage =
 	let
@@ -230,36 +244,61 @@ cell
     
     fun sideImage alt url proc = <xml><img {Src=url, Alt=alt, OnClick=proc}/></xml>
 
-    fun horiz_layout = mapX fn item => <xml><td>{item}</td></xml>
+    fun horiz_layout = mapX fn item => <xml><table><tr><td>{item}</td></tr></table></xml>
+    
+    (* renderXXX are signals *)
 
-	fun renderCell =
+	fun renderCell cellId vst : signal xbody =
+	    return
+  		    <xml><td onclick={pressCell cellId st}>
+  		        {st.}
+	    	</td></xml>
 
-		mapX (fn cell =>
-			<xml><td onclick={editCell cellAddr}>
-			</xml>)
-			(V.toList vec)
+    fun renderCaption (id : lang_id_or_feature_id) (vst : view_state) : signal xbody =
+        let
+            renderCaption' vec id =
+                
+        in    
+            case id of
+                LID lid => renderCaption' vst.Langs lid
+              | FID fid => renderCaption' vst.Feats fid
+        end
 
-	fun renderTop =
-		if st.Transposed then
-			mapX renderCaption (V.toList st.Langs)
-		else
-			mapX renderCaption (V.toList st.Feats)
+	fun renderTop (vst : view_state) : signal xbody =
+    	cap <-
+    	    mapMX renderCaption
+    		    (if vst.Transposed then
+    	    		(map LID (V.toList vst.Langs))
+    		    else
+	    		    (map FID (V.toList vst.Feats)));
+		return <xml><tr>{cap}</tr></xml>
 
-	fun renderBody =
-		if st.Transposed then
-		else
-			mapX (fn lid =>
-				mapX )
-				(V.toList st.Langs)
+	fun renderBody (vst : view_state) : signal xbody =
+   		if st.Transposed then
+   			mapX (fn fid =>
+   			        cap <- renderCaption (LID lid) vst;
+   				    row <-
+   				        mapX (fn lid =>
+   				                renderCell (lid,fid) vst)
+           				    (V.toList vst.Langs);
+           		    return <xml><tr>{cap}{row}</tr></xml>)
+   	    	    (V.toList st.Feats)
+   		else
+   			mapX (fn lid =>
+   			        cap <- renderCaption (FID fid) vst;
+   				    row <-
+   				        mapX (fn fid =>
+   				                renderCell (lid,fid) vst)
+           				    (V.toList st.Feats);
+           		    return <xml><tr>{cap}{row}</tr></xml>)
+   	    	    (V.toList vst.Langs)
 
-	in
-	return <xml></xml>
-	end
+    fun mouseOutDoc = sendCancelDragging
 
 	in
 	return
 		<xml
-			<body onmouseout={sendCancelDragging}>
+			<body onmouseout={mouseOutDoc}>
 				{sideImage "feed1" "please give us feedback" "contact_us.png" Feedback.feedback}
 				{sideImage "feed2" "please help us improve this site" "feedback.gif" Feedback.feedback}
 				{horiz_layout
