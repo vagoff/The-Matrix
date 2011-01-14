@@ -1,5 +1,7 @@
 (* todo: track various implementations separately from languages *)
 (* todo: what about awk/nix/shell/...? *)
+(* todo: support for language aliases (due to renaming, etc) *)
+(* todo: check labels for uniqueness automatically at configuring stage *)
 
 (*
     , Authors : option
@@ -71,29 +73,35 @@ val initialize =
 			::[])::
 		
 	    add_interesting_langs "vag"
-			(  "prop", "kaya", "clay", "haxe", "bitc", "qi", "scheme"
-			:: "python", "smalltalk", "strongtalk", "eiffel", "java", "javascript"
-			:: "haskell", "clean", "disciple", "hume", "curry", "cilk", "boo", "cobra"
-			:: "gbeta", "guru", "ometa", "agda", "cayenne", "cpl", "charity", "epigram"
-			:: "flapjax", "webdsl", "mobl", "factor", "falcon", "lunascript", "coffeescript"
-			:: "curl", "rebol", "xl", "gel"
-			:: "lustre", "esterel"
-			:: "groovy", "scala", "falcon"
-			:: "sml", "vault", "ocaml"
+			(  "Prop":: "Kaya":: "Clay":: "Haxe":: "Qi":: "Haskell":: "Clean":: "Omega"
+			:: "Python":: "Smalltalk":: "Strongtalk":: "Eiffel":: "Java":: "JavaScript":: "EcmaScript"
+			:: "Haskell":: "Clean":: "Disciple":: "Hume":: "Curry":: "Cilk":: "Boo":: "Cobra"
+			:: "GBeta":: "Guru":: "OMeta":: "Agda":: "Agda2":: "Cayenne":: "CPL":: "Charity":: "Epigram"
+			:: "Flapjax":: "WebDSL":: "Mobl":: "Lunascript":: "Coffeescript":: "Kodu"
+			:: "Curl":: "Rebol":: "XL":: "GEL":: "Ur":: "Lustre":: "Esterel":: "ooc"
+			:: "Groovy":: "Scala":: "Zice":: "Falcon":: "SML":: "Vault":: "Ocaml":: "F#"
 			::[])::
 
-	    add_more_langs ( "ada":: "d":: "c":: "c++":: "c#":: "ruby" ::[])::
+	    add_more_langs
+	        (  "Ada":: "D":: "C":: "C++":: "C#":: "Ruby":: "Go":: "Io":: "Oz":: "Scheme"
+            :: "Duby":: "Newspeak"::  "Objective-J":: "BitC":: "PyPy":: "Clojure"
+            :: "Fancy":: "Coherence":: "Subtext":: "Noop":: "Factor":: "E":: "Caja":: "Slate"
+            :: "AmbientTalk":: "Thyrd":: "Cola":: "Gosu":: "Stratified Javascript"
+            :: "Jsws":: "Frink":: "Dalvik":: "Trylon":: "Ioke":: "Coc"
+            :: "Occam":: "Pict":: "Prolog":: "Icon":: "Self":: "Forth"
+            :: "Pascal":: "Oberon":: "Zonnon":: "Factor":: "Falcon"
+            ::[])::
 
 	    add_feature_group "bool" "syntax"
 			(  ("c-like", "c-like syntax")
 			:: ("offside", "layout rule")
 			:: ("semi", "frequent semicolons after statements")
 			:: ("c-braces", "c-like braces")
-			:: ("expr", "no statements:: only exressions")
+			:: ("expr", "no statements, only exressions")
 			:: ("longstr", "supports long strings and docstrings")
 			::[])::
 		
-		add_feature_group "bool", "political"
+		add_feature_group "bool" "political"
 			(  ("nolck", "language is not in vendor lock-in")
 			:: ("gpl", "GPL-like license")
 			:: ("mit", "MIT-like license")
@@ -141,9 +149,8 @@ val initialize =
  			:: ("statie", "static typing")
  			:: ("dynie", "dynamic typing or no typing")
  			:: ("edsl", "allows easy to encode EDSLs")
-			:: ("have official specification")
-			:: ("has at least one imeplementation that is not vendor lock-in")
-			:: ("error reporting is satisfactory")
+			:: ("spec", "have official specification")
+			:: ("lck", "has at least one imeplementation that is not vendor lock-in")
 			:: ("infer", "type inference")
 			:: ("princip", "principal types")
 			:: ("parmod", "parametrized modules (functors)")
@@ -164,7 +171,6 @@ val initialize =
 			:: ("resi", "has builtin support for residuation")
 			:: ("narr", "has builtin support for narrowing")
 			:: ("backtracking", "has backtracking")
-			:: ("map literals")
 			:: ("option", "builtin nullable types")
 			:: ("nulls", "all types contains null")
 			:: ("sync", "builtin syncronization")
@@ -179,9 +185,9 @@ val initialize =
 			:: ("cc", "full multishot first-class continuations")
 			:: ("excp", "exceptions")
 			:: ("final", "finally in try/catch")
-			:: ("excoro", "correct exception support in coroutining constructions")
-			:: ("gen", "generators")
-			:: ("iter", "iterators")
+			:: ("excoro", "correct exception support in coroutining")
+			:: ("gen", "has builtin support for generators")
+			:: ("iter", "has builtin support for iterators")
 			:: ("compr", "sequence comprehensions")
 			:: ("ndsl", "full EDSL support")
 			:: ("pdsl", "partial EDSL support")
@@ -212,9 +218,963 @@ val initialize =
 			:: ("lscop", "lexical scope")
 			:: ("dscop", "dynamic scope")
 			:: ("ldscop", "both static and dynamic scope")
+			:: ("concat", "concatenative")
+			:: ("boot", "has compiler written in itself")
+			:: ("eso", "esoteric")
+			:: ("edu", "educational")
 			::[])::
 		
 	[])
 	end
 
 end
+
+(*
+			:: ("short", "extra short definitions (lisp,smalltalk,haskell,forth)")
+			:: ("error reporting is satisfactory")
+			:: ("map literals") -- what is it? i've forgot entirely :(
+*)
+
+(*
+Array Programming Languages
+
+    * Fortran
+    * Analytica
+    * Chapel
+    * APL
+    * FISh
+    * F
+    * A+
+    * F-Script
+    * Fortress
+    * IDL
+    * J
+    * K
+    * PDL
+    * R
+    * NESL
+    * MATLAB (Matrix Laboratory)
+    * S-Lang
+    * Octave
+    * Nial
+    * SAC
+    * ZPL
+    * X10
+
+Aspect Oriented Programming Languages
+
+    * AspectLua
+    * AspectJ
+    * CaesarJ
+    * Object Teams
+    * E
+    * Aspect C++
+    * Compose
+
+Authoring Programming Languages
+
+    * PILOT
+    * Bigwig
+    * TUTOR
+    * Coursewriter
+
+Assembly Languages
+
+    * ASEM-51
+    * AKI
+    * ASCENT
+    * ASPER
+    * BAL
+    * C--
+    * COMPASS
+    * Emu8086
+    * EDTASM
+    * FAP
+    * FASM
+    * GAS
+    * HLA
+    * HLASM
+    * LC-3
+    * Linoleum
+    * MACRO-11
+    * MACRO-20
+    * MACRO-32
+    * MASM
+    * MI
+    * MIPS
+    * Motorola 68KAssembly of CPUs
+    * NASM
+    * NEAT
+    * PAL-III
+    * PASM
+    * RosAsm
+    * Sphinx
+    * TASM
+    * Yasm
+
+Command Line Interface Programming Languages
+
+    * 4DOS
+    * .bat
+    * Windows PowerShell
+    * CHAIN
+    * CLIST
+    * DCL,/li>
+    * DOS Batch Language
+    * CMS EXEC
+    * EXEC 2
+    * JCL
+    * sh
+    * csh
+    * Ch
+    * tcsh
+    * bash
+    * ksh
+    * zsh
+    * Rc
+    * Es shell
+    * REXX
+    * SCLI
+    * SsCLI
+    * TACL
+
+Compiled Programming Languages
+
+    * Ada
+    * ALGOL
+    * Ateji PX
+    * BASIC
+    * C
+    * C++
+    * C#
+    * CLEO
+    * CLIPPER 5.3
+    * Clush
+    * COBOL
+    * CLisp
+    * Cobra
+    * Corn
+    * Curl
+    * D
+    * DASL
+    * Deplhi
+    * DIBOL
+    * Dylan
+    * dylan.NET
+    * Ecere C
+    * Eiffel
+    * Factor
+    * Forth
+    * Fortran
+    * Go
+    * Haskell
+    * Harbour
+    * Java
+    * JOVIAL
+    * LabVIEW
+    * Nemerle
+    * Objective-C
+    * Pascal
+    * Plus
+    * ppC++
+    * Python
+    * RPG
+    * Scheme
+    * SmallTalk
+    * ML
+    * Turing
+    * Urq
+    * Visual Basic
+    * Visual FoxPro
+    * Visual Prolog
+    * WinDev
+    * X++
+    * XL
+    * Z++
+
+Concurrent Programming Languages
+
+    * Ada
+    * ChucK
+    * Cilk
+    * C Omega
+    * Clojure
+    * ConcurrentLua
+    * Concurrent Pascal
+    * Corn
+    * Curry
+    * E
+    * Eiffel
+    * Erlang
+    * Go
+    * Java
+    * Join-Calculus
+    * Joule
+    * Limbo
+    * MultiLisp
+    * occam
+    * Oz
+    * Pict
+    * SALSA
+    * Scala
+    * SR
+
+Dataflow Programming Languages
+
+    * Hartman Pipelines
+    * G
+    * Lucid
+    * Max
+    * Prograph
+    * Pure Data
+    * Vee
+    * VisSim
+    * WebMethods Flow
+    * Monk
+    * Oz
+    * VHDL
+
+Data Oriented Programming Languages
+
+    * Clarion
+    * Clipper
+    * dBase
+    * MUMPS
+    * SPARQL
+    * SQL
+    * Tutorial D
+    * Visual FoxPro
+    * WebQL
+
+Educational Programming Languages
+
+    * Scratch
+    * Etoys
+    * Squeak
+    * BlueJ
+    * Greenfoot
+    * NetBeans
+    * Scheme
+    * Logo
+    * Common Lisp
+    * newLISP
+    * Gambas
+    * SiMPLE
+    * Microsoft Small Basic
+    * BASIC-256
+    * Visual Basic .Net (one of the most popular computer programming langauges for beginners)
+    * Alice (the most popular language which is used in computer programming for kids)
+    * AgentSheets
+    * Baltie
+    * E-Slate
+    * CiMPLE
+    * Hackey Hack
+    * Guido van Robot
+    * Kodu
+    * Karel
+    * Mama
+    * Pascal
+    * Lego Mindstorms
+    * RoboMind
+    * Phrogram
+    * Stagecast Creator
+    * Curry
+    * Haskel
+    * A++
+    * Oz
+    * Qi II
+    * M2001
+
+Data Structured Programming Languages
+
+    * dBase
+    * SQL
+    * Clarion
+    * MUMPS
+    * SPARQL
+    * Fox Pro
+    * Clipper
+    * WebQL
+
+Declarative Programming Languages
+
+    * Ant
+    * Lustre
+    * Modelica
+    * xBase
+    * MetaPost
+    * DASL
+    * XSL Transformations
+    * Prolog
+    * Poses++
+
+Extension Programming Languages
+
+    * Ateji PX
+    * AutoLISP
+    * CAL
+    * C/AL
+    * DML
+    * Guile
+    * Lua
+    * OptimJ
+    * Python
+    * REXX
+    * Ruby
+    * S-Lang
+    * SQL
+    * Tcl
+    * Vimscript
+    * VBA
+    * Windows PowerShell
+
+Esoteric Programming Languages
+
+    * Whitespace
+    * Chef
+    * Knlingon
+    * Befunge
+    * Shakespeare
+    * LOLCODE
+    * FALSE
+    * Piet
+    * INTERCAL
+    * Malbolge
+    * SNUSP
+
+Functional Programming Languages
+
+    * Charity
+    * Curl
+    * Clean
+    * F#
+    * Haskell
+    * Lisp
+    * Hop
+    * Mathematica
+    * ML
+    * Erlang
+    * R
+    * Spreadsheets
+    * Kite
+    * OPS5
+    * Opal
+
+Iterative Programming Languages
+
+    * Python
+    * Cobra
+    * XL
+    * Eiffel
+    * Sather
+    * Alphard
+    * Icon
+    * Aldor
+    * Lua
+    * C#
+    * Lush
+    * CLU
+
+Logic Oriented Programming Languages
+
+    * Leda
+    * Janus
+    * Poplog
+    * Oz
+    * Fril
+    * CLACL
+    * ROOP
+    * Alma-0
+
+Fourth Generation Commercial Environment Programming Languages
+
+    * FOCUS
+    * MARK-IV
+    * Oracle Express 4GL
+    * SAS
+    * XML mosaic
+    * Aubit 4GL
+    * CorVision
+    * Uniface
+    * LINC 4GL
+    * ABAP
+    * Ubercode
+    * xBase
+    * MAPPER
+    * Visual DataFlex
+    * Today
+    * Visual FoxPro
+
+Machine Programming Languages
+
+    * UltraSPARC
+    * Motorola 6800
+    * Intel 8008/8080/8085
+    * StrongARM
+    * ARM
+    * Commodore 64 CPU
+    * MIPS R2000/ R3000
+    * National 32032
+
+Interactive Mode Programming Languages
+
+    * BASIC
+    * Clojure
+    * CLisp
+    * Erlang
+    * F#
+    * Forth
+    * FPr
+    * Fril
+    * Haskell
+    * IDL
+    * Lua
+    * MUMPS
+    * Maple
+    * MATLAB
+    * ML
+    * Mythryl
+    * Perl
+    * PostScript
+    * Python
+    * R
+    * REXX
+    * Ruby
+    * Scala
+    * Scheme
+    * SmallTalk
+    * S-Lang
+    * Tcl
+    * Windows PowerShell
+
+Interpreted Programming Languages
+
+    * Ant
+    * APL
+    * AutoHotkey
+    * Autolt
+    * BASIC
+    * Databus
+    * Eiffel
+    * Forth
+    * FPr
+    * Frink
+    * GML
+    * Groovy
+    * Haskell
+    * J
+    * LISP
+    * LPC
+    * Lua
+    * Lush
+    * MUMPS
+    * Maple
+    * Pascal
+    * Perl
+    * Pikt
+    * PostScript
+    * Python
+    * REXX
+    * R
+    * Ruby
+    * S-Lang
+    * Spin
+    * TorqueScript
+    * thinBasic
+    * VBScript
+    * Windowes PowerShell
+    * XMLmosaic
+
+Iterative Programming Languages
+
+    * Aldor
+    * Alphard
+    * C#
+    * CLU
+    * Cobra
+    * Eiffel
+    * Icon
+    * IPL-v
+    * Lua
+    * Lush
+    * Python
+    * Sather
+    * XL
+
+List Based Programming Languages
+
+    * FPr
+    * Joy
+    * Lisp
+    * Lush
+    * R
+    * TCl
+    * TRAC
+
+Little Languages
+
+    * apply
+    * awk
+    * Comet
+    * SQL
+
+Macro Programming Languages
+
+    * cpp
+    * m4
+    * PHP
+    * SMX
+
+Meta programming Languages
+
+    * C++
+    * Curl
+    * D
+    * Forth
+    * Haskell
+    * Lisp
+    * Lua
+    * Maude System
+    * MetaL
+    * MetaOCaml
+    * Nemerle
+    * Perl
+    * Python
+    * ruby
+    * SmallTalk
+    * XL
+
+Multiparadigm Programming Languages
+
+    * Ada
+    * ALF
+    * Alma
+    * APL
+    * BETA
+    * C++
+    * C#
+    * ChucK
+    * Cobra
+    * CLisp
+    * Corn
+    * Curl
+    * Curry
+    * D
+    * Delphi
+    * Dylan
+    * ECMAScript
+    * Eiffel
+    * F
+    * Fantom
+    * FPr
+    * Harbour
+    * Hop
+    * J
+    * LabVIEW
+    * Lasso
+    * Lava
+    * Leda
+    * Lua
+    * Metaobject protocols
+    * Mythryl
+    * Nemerle
+    * Objective Camrl
+    * Oz
+    * Object Pascal
+    * Perl
+    * PHP
+    * Pliant
+    * Poplog
+    * ppC++
+    * Prograph
+    * Python
+    * R
+    * REBOL
+    * ROOP
+    * Ruby
+    * Scala
+    * Seed 7
+    * SISAL
+    * Spreadsheets
+    * Tcl
+    * Windows PowerShell
+    * XL
+
+Numerical Analysis Programming Languages
+
+    * Algae
+    * AMPL
+    * GAMS
+    * MATLAB
+    * Seneca
+
+Non-English Based Programming Languages
+
+    * ARLOGO
+    * Chinese BASIC
+    * Fjölnir
+    * HPL
+    * Lexico
+    * Rapira
+    * Glagol
+    * Portugol
+
+Object Oriented Class Based Programming Languages
+
+    * CLisp
+    * Dylan
+    * Goo
+    * Cecil
+    * Actor
+    * Ada 95
+    * BETA
+    * C++
+    * Chrome
+    * ChucK
+    * Cobra
+    * ColdFusion
+    * Corn
+    * Curl
+    * D
+    * DASL
+    * Delphi
+    * dylan.NET
+    * E
+    * Ecere C
+    * Eiffel
+    * F-Script
+    * Fortran
+    * Fortress
+    * FPr
+    * GAMBAS
+    * GML
+    * Harbour
+    * j
+    * Java
+    * Kite
+    * LabVIEW
+    * Lava
+    * Lua
+    * Modula-2
+    * Moto
+    * Nemerle
+    * NetRexx
+    * Oberon-2
+    * Pbject Pascal
+    * Object Caml
+    * Perl 5
+    * PHP
+    * Pliant
+    * ppC++
+    * Prograph
+    * Python
+    * Revolution
+    * Ruby
+    * Scala
+    * Seccia
+    * Simula
+    * SmallTalk
+    * SPIN
+    * SuperCollider
+    * VBScript
+    * Visual DataFlex
+    * Visual FoxPro
+    * Visual Prolog
+    * X++
+    * XOTcl
+
+Object Oriented Prototype Based Programming Languages
+
+    * ABCL/1/R/R2/c plus
+    * Agora
+    * cecil
+    * ECMAScript
+    * Etoys
+    * Glyphic script
+    * Io
+    * Lisaac
+    * Lua
+    * MOO
+    * NewtonScript
+    * Obliq
+    * R
+    * REBOL
+    * Self
+    * Slate
+    * TADS
+
+OFFSide Rule Programming Languages
+
+    * ISWIM
+    * ABC
+    * Hyper Talk
+    * Ivy
+    * Miranda
+    * Occam
+    * Pliant
+    * SPIn
+    * XL
+
+Procedural Programming Languages
+
+    * Ada
+    * ALGOL
+    * Alma-0
+    * BASIC
+    * BLISS
+    * C
+    * C++
+    * C#
+    * ChucK
+    * Cobra
+    * COBOL
+    * ColdFusion
+    * Component Pascal
+    * Curl
+    * D
+    * DASL
+    * dylan.NET
+    * Delphi
+    * Ecere C
+    * ECMAScript
+    * Eiffel
+    * Fortran
+    * FPC Pascal
+    * Harbour
+    * Hyper Talk
+    * Java
+    * JOVIAL
+    * Lasso
+    * Modula-2
+    * Oberon
+    * Oberon-2
+    * MATLAB
+    * MUMPS
+    * Nemerle
+    * Occam
+    * Pascal
+    * PCASTL
+    * Perl
+    * PL/C
+    * PL/I
+    * Plus
+    * Python
+    * R
+    * Rapira
+    * RPG
+    * S-Lang
+    * VBScript
+    * Visual Basic
+    * Visual FoxPro
+    * X++
+    * XL
+    * XMLmosaic
+
+Reflective Languages
+
+    * Aspect Oriented
+    * Befunge
+    * C##
+    * ChucK
+    * Cobra
+    * Component Pascal Black Box Component Builder
+    * Cobra
+    * Curl
+    * DSelphi
+    * ECMAScript
+    * Eiffel
+    * Forth
+    * Harbour
+    * Java
+    * Lisp
+    * Lua
+    * Maude System
+    * .NET FCLR
+    * Oberon-2
+    * Objective-C
+    * PCASTL
+    * Perl
+    * PHP
+    * Pico
+    * Pliant
+    * Poplog
+    * Prolog
+    * Python
+    * REBOL
+    * Ruby
+    * SmallTalk
+    * SNOBOL
+    * Tcl
+    * X++
+    * XL
+
+Rule Based Programming Languages
+
+    * CLIPS
+    * Constraint Handling Rules
+    * Jess
+    * OPS5
+    * Prolog
+    * Poses++
+
+Scripting Languages
+
+    * AppleScript
+    * AWK
+    * BeanShell
+    * Ch
+    * CLIST
+    * ColdFusion
+    * ECMAScript
+    * CMS EXEC
+    * EXEC 2
+    * F-Script
+    * Falcon
+    * Frink
+    * GML
+    * ICI
+    * Io
+    * JASS
+    * Groovy
+    * Join Java
+    * Tea
+    * Lua
+    * MEL
+    * Mythryl
+    * Perl
+    * PHP
+    * Pikt
+    * Python
+    * R
+    * REBOL
+    * REXX
+    * Revolution
+    * Ruby
+    * SmallTalk
+    * S-Lang
+    * Se
+    * Tcl
+    * TorqueScript
+    * VBScript
+    * Windows PowerShell
+    * Winbatch
+
+Stack Based Programming Languages
+
+    * Cat
+    * colorForth
+    * Factor
+    * Forth
+    * Joy
+    * Piet
+    * Poplog
+    * PostScript
+    * RPL
+    * Urq
+
+Synchronous Programming Languages
+
+    * Argos
+    * Averest
+    * Esterel
+    * LEA
+    * Lustre
+    * Signal
+    * SynchCharts
+
+Syntax Handling Programming Languages
+
+    * ANTLR
+    * Coco/R
+    * GNU bison
+    * GNU Flex
+    * Lex
+    * M4
+    * yacc
+    * JavaCC
+    * Rats!
+
+Visual Programming Languages
+
+    * CODE
+    * Eiffel
+    * Fabrik
+    * LabVIEW
+    * Lava
+    * Limnor
+    * Mindscript
+    * Max
+    * NXT-G
+    * PPL
+    * Prograph
+    * Pure Data
+    * Quartz Composer
+    * Scratch
+    * Simulink
+    * Spreadsheets
+    * Subtext
+    * Tinkertoy
+    * VEE
+    * VisSim
+    * ww
+    * EICASLAB
+
+Niklaus Wirth Programming Languages
+
+    * ALGOL W
+    * Modula
+    * Modula-2 (Obliq based on Modula 3)
+    * Oberon
+    * Oberon-2
+    * Oberon-07
+    * Object Pascal
+
+XML Based Programming Languages
+
+    * Ant
+    * C Omega
+    * Jelly
+    * LZX
+    * MXML
+    * XQuery
+    * XSLT
+    * XMLmosaic
+
+It is common for many programming languages to fall under multiple categories based upon their structure, function, orientation or any other criteria. Computer programming languages' popularity depends upon these versatilities and multi-functionalities.
+
+Latest Computer Programming Languages
+
+The following programming languages were developed in the years starting from 2000. Let's take a look at this list of the most recently developed programming languages.
+
+    * Alma-0
+    * Aspect-J
+    * Ada 2005
+    * Boo
+    * C#
+    * Cobra
+    * Clojure
+    * D
+    * F#
+    * Fantom
+    * Factor
+    * Ferite
+    * Groovy
+    * Go
+    * Io
+    * Joy
+    * Join Java
+    * Kite
+    * Links
+    * Little b
+    * Nemerle
+    * OptimJ
+    * Oberon-07
+    * Pure
+    * Squirrel
+    * Scala
+    * Subtext
+    * Visual Basic .Net
+    * Vala
+    * Windows PowerShell
+    * XL
+*)

@@ -125,7 +125,7 @@ type dragging_state =
 	}
 
 (* local helper *)
-datatype touch_id = LID of lang_id | FID of feature_id
+datatype lang_id_or_feature_id = LID of lang_id | FID of feature_id
 
 fun buildMainPage =
 	let
@@ -238,9 +238,6 @@ left
     onmouseover={pressCaption rowid}>
 
 cell
-<td onmouseup={pressCell rowid colid}
-    onmousedown={pressCell rowid colid}
-    onmouseover={pressCell rowid colid>
     
     fun sideImage alt url proc = <xml><img {Src=url, Alt=alt, OnClick=proc}/></xml>
 
@@ -249,19 +246,30 @@ cell
     (* renderXXX are signals *)
 
 	fun renderCell cellId vst : signal xbody =
-	    return
-  		    <xml><td onclick={pressCell cellId st}>
+	    return <xml>
+            <td onmouseup={pressCell rowid colid}
+                onmousedown={pressCell rowid colid}
+                onmouseover={pressCell rowid colid
+            >
   		        {st.}
-	    	</td></xml>
+	    	</td>
+	    </xml>
 
     fun renderCaption (id : lang_id_or_feature_id) (vst : view_state) : signal xbody =
         let
-            renderCaption' vec id =
-                
+            renderCaption' idstr (caption,hint) =
+                return <xml>
+                    <td onmouseup={pressCaption id}
+                        onmousedown={pressCaption id}
+                        onmouseover={pressCaption id}
+                    >
+                        {[caption]}({[hint]})
+                    </td> (* [!] hint as hint *)
+                </xml>
         in    
             case id of
-                LID lid => renderCaption' vst.Langs lid
-              | FID fid => renderCaption' vst.Feats fid
+                LID lid => renderCaption' (toString lid) let data = fetch vst.LangData lid in (data.Caption,data.Title) end
+              | FID fid => renderCaption' (toString fid) let data = fetch vst.FeatData.fid in (data.Caption,data.Title) end
         end
 
 	fun renderTop (vst : view_state) : signal xbody =
@@ -289,7 +297,7 @@ cell
    				    row <-
    				        mapX (fn fid =>
    				                renderCell (lid,fid) vst)
-           				    (V.toList st.Feats);
+           				    (V.toList vst.Feats);
            		    return <xml><tr>{cap}{row}</tr></xml>)
    	    	    (V.toList vst.Langs)
 

@@ -43,7 +43,7 @@ fun reverse [e] (l : list0 e) = rev l []
 
 fun mp [a] [b] (f : a -> b) (xs : list0 a) : list0 b =
     let
-        mp' xs ys =
+        fun mp' xs ys =
             case xs of
     	        [] => ys
               | x :: xs' => mp' xs' (f x : ys)
@@ -136,7 +136,7 @@ fun depMapX [e] [s] (f : e -> xbody) (s : s) (xs : list0 e) : xbody = fst (foldM
 
 fun mapM [e] [m] (m : monad m) (f : e -> m r) (xs : list0 e) : m (list r) = (* mapMRev? *)
     let
-        mapM' xs res =
+        fun mapM' xs res =
     		case xs of
 	    		None => res
 		      | x :: xs' => mapM' xs' (ys <- res ; y <- f e ; return (y :: ys))
@@ -147,7 +147,7 @@ fun mapM [e] [m] (m : monad m) (f : e -> m r) (xs : list0 e) : m (list r) = (* m
 
 fun mapMX [e] [m] (m : monad m) (f : e -> m xbody) (xs : list0 e) : m xbody =
     let
-        mapMX' xs res =
+        fun mapMX' xs res =
     		case xs of
 	    		None => res
 		      | x :: xs' => mapM' xs' (ys <- res ; y <- f e ; return <xml>{ys}{y}</xml>)

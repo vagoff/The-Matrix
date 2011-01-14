@@ -59,8 +59,8 @@ fun foldMapX [e] [s] (f : e -> xbody) (s : s) (xs : list0 e) : xbody * s = L0.fo
 fun depMapX [e] [s] (f : e -> xbody) (s : s) (xs : list0 e) : xbody = L0.depMapX f s (convert xs)
 
 fun mapM [e] [m] (m : monad m) (f : e -> m r) ((x,xs) : list0 e) : m (list r) =
-    x' <- f x
-    xs' <- L0.mapM f xs
+    x' <- f x;
+    xs' <- L0.mapM f xs;
     return (x',xs')
 
 fun mapMX [e] [m] (m : monad m) (f : e -> m xbody) ((x,xs) : list1 e) : m xbody =
