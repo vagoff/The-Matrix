@@ -78,7 +78,7 @@ val initialize =
 			:: "Haskell":: "Clean":: "Disciple":: "Hume":: "Curry":: "Cilk":: "Boo":: "Cobra"
 			:: "GBeta":: "Guru":: "OMeta":: "Agda":: "Agda2":: "Cayenne":: "CPL":: "Charity":: "Epigram"
 			:: "Flapjax":: "WebDSL":: "Mobl":: "Lunascript":: "Coffeescript":: "Kodu"
-			:: "Curl":: "Rebol":: "XL":: "GEL":: "Ur":: "Lustre":: "Esterel":: "ooc"
+			:: "Curl":: "Rebol":: "XL":: "GEL":: "Ur":: "Lustre":: "Esterel":: "ooc":: "orc"
 			:: "Groovy":: "Scala":: "Zice":: "Falcon":: "SML":: "Vault":: "Ocaml":: "F#"
 			::[])::
 
@@ -1177,4 +1177,62 @@ The following programming languages were developed in the years starting from 20
     * Vala
     * Windows PowerShell
     * XL
+
+# ActorScript – theoretical purely actor-based language defined in terms of itself
+# Ada
+# Afnix – concurrent access to data is protected automatically (previously called Aleph, but unrelated to Alef)
+# Alef – concurrent language with threads and message passing, used for systems programming in early versions of Plan 9 from Bell Labs
+# Alice – extension to Standard ML, adds support for concurrency via futures.
+# Ateji PX – an extension to Java with parallel primitives inspired from pi-calculus
+# Axum – domain specific concurrent programming language, based on the Actor model and on the .NET Common Language Runtime using a C-like syntax.
+# Chapel – a parallel programming language being developed by Cray Inc.
+# Charm++ – C++-like language for thousands of processors.
+# Cilk – a concurrent C
+# Cω – C Omega, a research language extending C#, uses asynchronous communication
+# Clojure – a modern Lisp targeting the JVM
+# Concurrent Clean – a functional programming language, similar to Haskell
+# Concurrent Haskell – lazy, pure functional language operating concurrent processes on shared memory
+# Concurrent ML – a concurrent extension of Standard ML
+# Concurrent Pascal – by Per Brinch Hansen
+# Curry
+# E – uses promises, ensures deadlocks cannot occur
+# Eiffel – through its SCOOP mechanism based on the concepts of Design by Contract
+# Erlang – uses asynchronous message passing with nothing shared
+# Faust – Realtime functional programming language for signal processing. The Faust compiler provides automatic parallelization using either OpenMP or a specific work-stealing scheduler.
+# Go – systems programming language with explicit support for concurrent programming
+# Io – actor-based concurrency
+# Janus features distinct "askers" and "tellers" to logical variables, bag channels; is purely declarative
+# JoCaml
+# Join Java – concurrent language based on the Java programming language
+# Joule – dataflow language, communicates by message passing
+# Joyce – a concurrent teaching language built on Concurrent Pascal with features from CSP by Per Brinch Hansen
+# LabVIEW – graphical, dataflow programming language, in which functions are nodes in a graph and data is wires between those nodes. Includes object oriented language extensions.
+# Limbo – relative of Alef, used for systems programming in Inferno (operating system)
+# MultiLisp – Scheme variant extended to support parallelism
+# Modula-3 – modern language in Algol family with extensive support for threads, mutexes, condition variables.
+# Newsqueak – research language with channels as first-class values; predecessor of Alef
+# occam – influenced heavily by Communicating Sequential Processes (CSP).
+
+    * occam-π – a modern variant of occam, which incorporates ideas from Milner's π-calculus
+
+# Orc – a heavily concurrent, nondeterministic language based on Kleene algebra.
+# Oz – multiparadigm language, supports shared-state and message-passing concurrency, and futures
+
+    * Mozart Programming System – multiplatform Oz
+
+# Pict – essentially an executable implementation of Milner's π-calculus
+# Perl with AnyEvent and Coro
+# Python with greenlet and gevent.
+# Reia – uses asynchronous message passing between shared-nothing objects
+# SALSA – actor language with token-passing, join, and first-class continuations for distributed computing over the Internet
+# Scala – a general purpose programming language designed to express common programming patterns in a concise, elegant, and type-safe way
+# SR – research language
+# Stackless Python
+# SuperPascal – a concurrent teaching language built on Concurrent Pascal and Joyce by Per Brinch Hansen
+# Unicon – Research language.
+# Termite Scheme adds Erlang-like concurrency to Scheme
+# TNSDL – a language used at developing telecommunication exchanges, uses asynchronous message passing
+# VHDL – VHSIC Hardware Description Language, aka IEEE STD-1076
+# XC – a concurrency-extended subset of the C programming language developed by XMOS based on Communicating Sequential Processes. The language also offers built-in constructs for programmable I/O.
+
 *)

@@ -11,11 +11,10 @@ open Fixme
 (* select * from (select * from a,b order by a.a,b.b) as ab left join rel on (ab.a=rel.a and ab.b=rel.b); *)
 
 (*
-fun loadMatrixAccordingToTheView () = 
+fun loadCellDataAccordingToTheView () = 
 *)
 
-
-fun loadRawMatrix () =
+fun loadRawCellData =
 	(ls,fs,m) <- query
 		(SELECT
 			lf.lid, lf.lcap, lf.ltit,
@@ -47,7 +46,7 @@ fun loadRawMatrix () =
 			end)
 		(V.empty, V.empty, M.empty);
 
-	state <- source
+	return
 		{ Langs = V.keys ls
 		, Feats = V.keys fs
 		, FeatsSorting = Unsorted
@@ -58,9 +57,7 @@ fun loadRawMatrix () =
 		, LangData = ls
 		, FeatData = fs
 		, CellData = m
-		};
-
-    return state
+		}
 
 datatype sort_order = Ascending | Descending
 
@@ -69,27 +66,35 @@ fun invertSortOrder o =
 		Ascending => Descending
 	  | Descending => Ascending
 
-datatype sorted a = Unsorted | Sorted of (sort_order, a, option a)
+datatype sorting a = Unsorted | Sorted of (sort_order, a, option a)
 
-fun updateSortMode col =
+fun moveSortMode col =
 	case mode of
 		Unsorted => Sorted (col,None)
 	  | Sorted (prev,_) => Sorted (new,Some prev)
 
+fun sort dir vec by =
+	let
+		fun by' =
+			case d of
+				Ascending => by
+			  | Descending => fn a b => invertOrder (by a b)
+	in
+		V.sortBy by' vec
+	end
+
 type view_state =
 	{ Langs : vec lang_id
 	, Feats : vec feature_id
-	, FeatsSorting : sorted lang_id
-	, LangsSorting : sorted feature_id
-	, Transposed : bool
-	, DeletedLangs : vec lang_id 
-	, DeletedFeats : vec feature_id
+	, FeatsSorting : sorting lang_id
+	, LangsSorting : sorting feature_id
+	, Transposed : bool (* true = langs on left, features on top; false = vice versa *)
+	, DeletedLangs : list0 lang_id
+	, DeletedFeats : list0 feature_id
 	, LangData : dict lang_id lang_data
 	, FeatData : dict feature_id feature_data
-	, Matrix : dict (lang_id * feature_id) cell_data
+	, CellData : dict (lang_id * feature_id) cell_data
 	}
-
-type 
 
 type coord = int
 type pos = { Left : coord, Top : coord }
@@ -114,14 +119,15 @@ type mouse_event =
 
 datatype dnd_stage = Idle | Starting | Dragging
 
-type dnd_state =
-	{ State : dnd_stage
-	, Pos : pos
+type dnd_state a =
+	{ Stage : dnd_stage
+	, Pos0 : pos
+	, SavedState : a
 	}
 
-type dragging_state =
-	{ Lmb : dnd_state
-	, Rmb : dnd_state
+type dragging_state a =
+	{ Lmb : dnd_state a
+	, Rmb : dnd_state a
 	}
 
 (* local helper *)
@@ -135,64 +141,6 @@ fun buildMainPage =
 		, DoubleClickMilliseconds = 50
 		, DraggingZIndex = 5
 		}
-
-	fun dndEventProcessor ev =
-		let
-			fun dndStateMachine st btn =
-				case (st.State,btn) of
-					(Idle,MouseDown) => rset State Starting st
-				  | (Starting,MouseUp) => performClick st
-				  | (Starting,MouseMove) =>
-						if abs (st.Pos.Left - pos.Left) >= cfg.DragThresholdPixels
-						|| abs (st.Pos.Top - pos.Top) >= cfg.DragThresholdPixels
-						then
-							rset State Dragging st
-						else
-							st
-				  | (Dragging,CancelDragging) => cancelDragging (rset State Idle st)
-				  | (Dragging,MouseUp) => completeDragging st
-				  | _ => st
-		in
-			rset Pos ev.Pos (dndStateMachine st)
-		end
-
-	fun sort dir vec by =
-		let
-			fun by' =
-				case d of
-					Ascending => by
-				  | Descending => fn a b => invertOrder (by a b)
-		in
-			V.sortBy by' vec
-		end
-
-	fun updateField r nm f = rupd nm f r (* [!] to lib? *)
-
-	fun reorderLangs st =
-		case st.LangsSorting of
-			Unsorted => st
-		  | Sorted (dir,fid1,mb_fid2) =>
-				updateField st Langs (sort dir st.Langs (fn lid1 lid2 =>
-					case compareCellsAt (lid1,fid1) (lid2,fid1) st.Matrix of
-						EQ =>
-							case mb_fid2 of
-								None => EQ
-							  | Some fid2 => compareCellsAt (lid1,fid2) (lid2,fid2) st.Matrix
-					  | LT => LT
-					  | GT => GT))
-
-	fun reorderFeats st =
-		case st.FeatsSorting of
-			Unsorted => st
-		  | Sorted (dir,lid1,mb_lid2) =>
-				updateField st Feats (sort dir st.Feats (fn fid1 fid2 =>
-					case compareCellsAt (lid1,fid1) (lid1,fid2) st.Matrix of
-						EQ =>
-							case mb_lid2 of
-								None => EQ
-							  | Some lid2 => compareCellsAt (lid2,fid1) (lid2,fid2) st.Matrix
-					  | LT => LT
-					  | GT => GT))
 
 	fun whichButtons w =
 		{ Left = w % 2 <> 0
@@ -211,41 +159,82 @@ fun buildMainPage =
 		  | (false,true) => f MouseDown st
 		  | _ => st
 
+	fun dndEventProcessor ev ds =
+		let
+			fun dndStateMachine ds btn =
+				case (ds.Stage,btn) of
+					(Idle,MouseDown) => rset State Starting (rset Pos0 ev.Pos0 ds)
+				  | (Starting,MouseUp) => performClick ds
+				  | (Starting,MouseMove) =>
+						if abs (ds.Pos0.Left - pos.Left) >= cfg.DragThresholdPixels
+						|| abs (ds.Pos0.Top - pos.Top) >= cfg.DragThresholdPixels
+						then
+							rset Stage Dragging ds
+						else
+							ds
+				  | (Dragging,CancelDragging) => cancelDragging (rset Stage Idle ds)
+				  | (Dragging,MouseUp) => completeDragging ds
+				  | _ => ds
+		in
+			rset Pos0 ev.Pos0 (dndStateMachine ds)
+		end
+
+
+	fun updateField r nm f = rupd nm f r (* [!] to lib? *)
+
+	fun reorderLangs vs =
+		case st.LangsSorting of
+			Unsorted => vs
+		  | Sorted (dir,fid1,mb_fid2) =>
+				updateField vs Langs (sort dir st.Langs (fn lid1 lid2 =>
+					case compareCellsAt (lid1,fid1) (lid2,fid1) st.CellData of
+						EQ =>
+							case mb_fid2 of
+								None => EQ
+							  | Some fid2 => compareCellsAt (lid1,fid2) (lid2,fid2) vs.CellData
+					  | LT => LT
+					  | GT => GT))
+
+	fun reorderFeats st =
+		case st.FeatsSorting of
+			Unsorted => st
+		  | Sorted (dir,lid1,mb_lid2) =>
+				updateField st Feats (sort dir st.Feats (fn fid1 fid2 =>
+					case compareCellsAt (lid1,fid1) (lid1,fid2) st.CellData of
+						EQ =>
+							case mb_lid2 of
+								None => EQ
+							  | Some lid2 => compareCellsAt (lid2,fid1) (lid2,fid2) st.CellData
+					  | LT => LT
+					  | GT => GT))
+
 	fun sendCancelDragging =
 		dndEventProcessor CancelDragging st
 
 	fun onMouseEvent id =
-		pos <- locateMouse
-		w <- currentMouseButtons
-		whichButtons w
-		st <- return (processButton Left dndEventProcessor dndSt)
-		st <- return (processButton Right dndEventProcessor dndSt)
-		if btns.Middle then sendCancelDragging
-		st <- return (processButton Left dndEventProcessor dndSt)
+		pos <- locateMouse;
+		w <- currentMouseButtons;
+		whichButtons w;
+		st <- return (processButton Left dndEventProcessor dndSt);
+		st <- return (processButton Right dndEventProcessor dndSt);
+		if btns.Middle then sendCancelDragging;
+		st <- return (processButton Left dndEventProcessor dndSt);
 		dndEventProcessor st id btn
 
-	(rowid,colid) <- return if vst.Transposed then (LID lid, FID fid) else (FID fid, LID lid)
+	(rowid,colid) <- return if vs.Transposed then (LID lid, FID fid) else (FID fid, LID lid)
 	
-
-top
-<td onmouseup={pressCaption colid}
-    onmousedown={pressCaption colid}
-    onmouseover={pressCaption colid>
-
-left
-<td onmouseup={pressCaption rowid}
-    onmousedown={pressCaption rowid}
-    onmouseover={pressCaption rowid}>
-
-cell
-    
     fun sideImage alt url proc = <xml><img {Src=url, Alt=alt, OnClick=proc}/></xml>
 
     fun horiz_layout = mapX fn item => <xml><table><tr><td>{item}</td></tr></table></xml>
-    
-    (* renderXXX are signals *)
 
-	fun renderCell cellId vst : signal xbody =
+    (* pressXXX are user input handlers *)    
+
+    pressCaption = return ()
+    pressCell = return ()
+
+    (* renderXXX are signals *)
+    
+	fun renderCell cellId vs : signal xbody =
 	    return <xml>
             <td onmouseup={pressCell rowid colid}
                 onmousedown={pressCell rowid colid}
@@ -255,7 +244,7 @@ cell
 	    	</td>
 	    </xml>
 
-    fun renderCaption (id : lang_id_or_feature_id) (vst : view_state) : signal xbody =
+    fun renderCaption (id : lang_id_or_feature_id) (vs : view_state) : signal xbody =
         let
             renderCaption' idstr (caption,hint) =
                 return <xml>
@@ -268,58 +257,66 @@ cell
                 </xml>
         in    
             case id of
-                LID lid => renderCaption' (toString lid) let data = fetch vst.LangData lid in (data.Caption,data.Title) end
-              | FID fid => renderCaption' (toString fid) let data = fetch vst.FeatData.fid in (data.Caption,data.Title) end
+                LID lid => renderCaption' (toString lid) let data = fetch vs.LangData lid in (data.Caption,data.Title) end
+              | FID fid => renderCaption' (toString fid) let data = fetch vs.FeatData.fid in (data.Caption,data.Title) end
         end
 
-	fun renderTop (vst : view_state) : signal xbody =
+	fun renderTop (vsRef,dsRef) : signal xbody =
     	cap <-
     	    mapMX renderCaption
-    		    (if vst.Transposed then
-    	    		(map LID (V.toList vst.Langs))
+    		    (if vs.Transposed then
+    	    		(map LID (V.toList vs.Langs))
     		    else
-	    		    (map FID (V.toList vst.Feats)));
+	    		    (map FID (V.toList vs.Feats)));
 		return <xml><tr>{cap}</tr></xml>
 
-	fun renderBody (vst : view_state) : signal xbody =
+	fun renderBody (vsRef,dsRef) : signal xbody =
+	    vs <- signal vsRef;
    		if st.Transposed then
    			mapX (fn fid =>
-   			        cap <- renderCaption (LID lid) vst;
+   			        cap <- renderCaption (LID lid) vs;
    				    row <-
    				        mapX (fn lid =>
-   				                renderCell (lid,fid) vst)
-           				    (V.toList vst.Langs);
+   				                renderCell (lid,fid) vs)
+           				    (V.toList vs.Langs);
            		    return <xml><tr>{cap}{row}</tr></xml>)
    	    	    (V.toList st.Feats)
    		else
    			mapX (fn lid =>
-   			        cap <- renderCaption (FID fid) vst;
+   			        cap <- renderCaption (FID fid) vs;
    				    row <-
    				        mapX (fn fid =>
-   				                renderCell (lid,fid) vst)
-           				    (V.toList vst.Feats);
+   				                renderCell (lid,fid) vs)
+           				    (V.toList vs.Feats);
            		    return <xml><tr>{cap}{row}</tr></xml>)
-   	    	    (V.toList vst.Langs)
+   	    	    (V.toList vs.Langs)
 
     fun mouseOutDoc = sendCancelDragging
 
+    fun withSt f stRef =
+        st <- get stRef
+        set stRef (f st)
+
 	in
-	return
-		<xml
-			<body onmouseout={mouseOutDoc}>
-				{sideImage "feed1" "please give us feedback" "contact_us.png" Feedback.feedback}
-				{sideImage "feed2" "please help us improve this site" "feedback.gif" Feedback.feedback}
-				{horiz_layout
-					(  <xml><button value="save view as..." onclick={fixme}></xml>
-					:: <xml><button value="new attribute" onclick={fixme}></xml>
-					:: <xml><button value="new language" onclick={fixme}></xml>
-					:: <xml><button value="transpose views" onclick={fixme}></xml>
-					:: <xml><button value="top views" onclick={fixme}></xml>
-					::[])}
-				<table>
-					<dyn {Signal=renderTop}/>
-					<dyn {Signal=renderBody}/>
-				</table>
-			</body>
-		</xml>
-	end
+    	vs <- loadRawCellData;
+    	vsRef <- source vs;
+    	dsRef <- source initialDndState;
+    	return
+    		<xml
+    			<body onmouseout={mouseOutDoc (vsRef,dsRef)}>
+    				{sideImage "feed1" "please give us feedback" "contact_us.png" Feedback.feedback}
+    				{sideImage "feed2" "please help us improve this site" "feedback.gif" Feedback.feedback}
+    				{horiz_layout
+    					(  <xml><button value="save view as..." onclick={fixme}></xml>
+    					:: <xml><button value="new attribute" onclick={fixme}></xml>
+    					:: <xml><button value="new language" onclick={fixme}></xml>
+    					:: <xml><button value="transpose views" onclick={fixme}></xml>
+    					:: <xml><button value="top views" onclick={fixme}></xml>
+    					::[])}
+    				<table>
+    					<dyn {Signal=renderTop (vsRef,dsRef)}/>
+    					<dyn {Signal=renderBody (vsRef,dsRef)}/>
+    				</table>
+    			</body>
+    		</xml>
+    end
