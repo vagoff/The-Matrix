@@ -27,5 +27,5 @@ end
 structure SequenceTest = struct
 	structure L0 : SEQUENCE = List0
 	structure L1 : SEQUENCE = List1
-	(* [!] structure ST : SEQUENCE = Stream *)
+	structure ST : SEQUENCE = Stream
 end

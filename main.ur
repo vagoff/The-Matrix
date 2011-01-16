@@ -262,6 +262,7 @@ fun buildMainPage =
         end
 
 	fun renderTop (vsRef,dsRef) : signal xbody =
+	    vs <- signal vsRef;
     	cap <-
     	    mapMX renderCaption
     		    (if vs.Transposed then

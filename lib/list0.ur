@@ -27,7 +27,7 @@ fun flatten [e] (xs : list0 (list0 e)) : list0 e = concat
 	let
 		fun flatten' xs res =
 			case xs of
-				None => res
+				[] => res
 			  | x :: xs' => flatten' xs' (concat x res)
 			
 	in
@@ -111,7 +111,7 @@ fun mapX [e] (f : e -> xbody) (xs : list0 e) : xbody =
 	let
 		fun mapX' xs res =
 			case xs of
-				None => res
+				[] => res
 			  | x :: xs' => mapX' xs' <xml>{res}{f x}</xml>
 	in
 		mapX' xs <xml/>
@@ -121,7 +121,7 @@ fun foldMapX [e] [s] (f : e -> xbody) (s : s) (xs : list0 e) : xbody * s =
 	let
 		fun foldMapX' xs res st =
 			case xs of
-				None => (res,st)
+				[] => (res,st)
 			  | x :: xs' =>
 			  	let
 			  		val (x',st') = f st
@@ -138,7 +138,7 @@ fun mapM [e] [m] (m : monad m) (f : e -> m r) (xs : list0 e) : m (list r) = (* m
     let
         fun mapM' xs res =
     		case xs of
-	    		None => res
+	    		[] => res
 		      | x :: xs' => mapM' xs' (ys <- res ; y <- f e ; return (y :: ys))
     in
         res <- mapM' xs (return []);
@@ -149,7 +149,7 @@ fun mapMX [e] [m] (m : monad m) (f : e -> m xbody) (xs : list0 e) : m xbody =
     let
         fun mapMX' xs res =
     		case xs of
-	    		None => res
+	    		[] => res
 		      | x :: xs' => mapM' xs' (ys <- res ; y <- f e ; return <xml>{ys}{y}</xml>)
     in
         mapMX' xs (return <xml/>)
