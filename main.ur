@@ -3,7 +3,8 @@ val fixme : transaction page = return <xml>fixme</xml>
 con list0 = List0.list0
 con list1 = List1.list1
 type vec = Oset.oset
-structure V = Oset
+structure O = Oset
+structure D = Dict
 structure M = Matrix
 open Schema
 open Fixme
@@ -15,7 +16,8 @@ fun loadCellDataAccordingToTheView () =
 *)
 
 fun loadRawCellData =
-	(ls,fs,m) <- query
+(*	(ls,fs,m) <- query *)
+    ls_fs_m <- query
 		(SELECT
 			lf.lid, lf.lcap, lf.ltit,
 			lf.fid, lf.fcap, lf.ftit,
@@ -35,9 +37,9 @@ fun loadRawCellData =
 			LEFT JOIN info as d ON (lf.lang_id = d.lang_id AND lf.feature_id = d.feature_id))
 		(fn r (l,f,m) =>
 			let
-				val lval = (r.Lcap, r.Ltit)
-				val fval = (r.Fcap, r.Ftit)
-				val dval = (d.value, d.link) 
+				val lval = { LCaption = r.Lcap, LTitle = r.Ltit)
+				val fval = ( FCaption = r.Fcap, FTitle = r.Ftit)
+				val dval = ( CValue = d.value, CLink = d.link) 
 			in
 				( V.setIfNone r.Lid lval l
 				, V.setIfNone r.Fid fval f
@@ -46,6 +48,7 @@ fun loadRawCellData =
 			end)
 		(V.empty, V.empty, M.empty);
 
+    let val (ls,vs,m) = ls_vs_m in
 	return
 		{ Langs = V.keys ls
 		, Feats = V.keys fs
@@ -58,6 +61,7 @@ fun loadRawCellData =
 		, FeatData = fs
 		, CellData = m
 		}
+    end
 
 datatype sort_order = Ascending | Descending
 
@@ -82,6 +86,21 @@ fun sort dir vec by =
 	in
 		V.sortBy by' vec
 	end
+
+type feature_data =
+    { FCaption : caption
+    , FTitle : title
+    }
+
+type lang_data =
+    { LCaption : caption
+    , LTitle : title
+    }
+
+type cell_data =
+    { CValue : string (* [!] serialized X *)
+    , CLink : option url
+    }
 
 type view_state =
 	{ Langs : vec lang_id
@@ -179,7 +198,6 @@ fun buildMainPage =
 			rset Pos0 ev.Pos0 (dndStateMachine ds)
 		end
 
-
 	fun updateField r nm f = rupd nm f r (* [!] to lib? *)
 
 	fun reorderLangs vs =
@@ -208,6 +226,9 @@ fun buildMainPage =
 					  | LT => LT
 					  | GT => GT))
 
+	fun dndZero a = { Stage = Idle, Pos0 = { Left = 0, Top = 0 }, SavedState a}
+    fun initialDndState a b = { Lmb = dndZero a, Rmb = dndZero b }
+
 	fun sendCancelDragging =
 		dndEventProcessor CancelDragging st
 
@@ -221,8 +242,6 @@ fun buildMainPage =
 		st <- return (processButton Left dndEventProcessor dndSt);
 		dndEventProcessor st id btn
 
-	(rowid,colid) <- return if vs.Transposed then (LID lid, FID fid) else (FID fid, LID lid)
-	
     fun sideImage alt url proc = <xml><img {Src=url, Alt=alt, OnClick=proc}/></xml>
 
     fun horiz_layout = mapX fn item => <xml><table><tr><td>{item}</td></tr></table></xml>
@@ -234,17 +253,19 @@ fun buildMainPage =
 
     (* renderXXX are signals *)
     
-	fun renderCell cellId vs : signal xbody =
+	fun renderCell (vs : view_state) lid_fid : signal xbody =
 	    return <xml>
-            <td onmouseup={pressCell rowid colid}
-                onmousedown={pressCell rowid colid}
-                onmouseover={pressCell rowid colid
+            <td onmouseup={pressCell lid_fid}
+                onmousedown={pressCell lid_fid}
+                onmouseover={pressCell lid_fid}
             >
-  		        {st.}
+  		        {case M.lookup st.matrix lid_fid of
+  		              None  => <xml/>
+  		            | Some info => <xml>{[info.CValue]}{[info.CLink]}<xml>}
 	    	</td>
 	    </xml>
 
-    fun renderCaption (id : lang_id_or_feature_id) (vs : view_state) : signal xbody =
+    fun renderCaption (vs : view_state) (id : lang_id_or_feature_id) : signal xbody =
         let
             renderCaption' idstr (caption,hint) =
                 return <xml>
@@ -258,13 +279,13 @@ fun buildMainPage =
         in    
             case id of
                 LID lid => renderCaption' (toString lid) let data = fetch vs.LangData lid in (data.Caption,data.Title) end
-              | FID fid => renderCaption' (toString fid) let data = fetch vs.FeatData.fid in (data.Caption,data.Title) end
+              | FID fid => renderCaption' (toString fid) let data = fetch vs.FeatData fid in (data.Caption,data.Title) end
         end
 
 	fun renderTop (vsRef,dsRef) : signal xbody =
 	    vs <- signal vsRef;
     	cap <-
-    	    mapMX renderCaption
+    	    mapMX (fn id => renderCaption
     		    (if vs.Transposed then
     	    		(map LID (V.toList vs.Langs))
     		    else
@@ -275,33 +296,33 @@ fun buildMainPage =
 	    vs <- signal vsRef;
    		if st.Transposed then
    			mapX (fn fid =>
-   			        cap <- renderCaption (LID lid) vs;
+   			        cap <- renderCaption vs (LID lid);
    				    row <-
    				        mapX (fn lid =>
-   				                renderCell (lid,fid) vs)
-           				    (V.toList vs.Langs);
+   				                renderCell vs (lid,fid)
+           				    (O.toList vs.Langs);
            		    return <xml><tr>{cap}{row}</tr></xml>)
-   	    	    (V.toList st.Feats)
+   	    	    (O.toList st.Feats)
    		else
    			mapX (fn lid =>
-   			        cap <- renderCaption (FID fid) vs;
+   			        cap <- renderCaption vs (FID fid);
    				    row <-
    				        mapX (fn fid =>
-   				                renderCell (lid,fid) vs)
-           				    (V.toList vs.Feats);
+   				                renderCell vs (lid,fid)
+           				    (O.toList vs.Feats);
            		    return <xml><tr>{cap}{row}</tr></xml>)
-   	    	    (V.toList vs.Langs)
+   	    	    (O.toList vs.Langs)
 
     fun mouseOutDoc = sendCancelDragging
 
     fun withSt f stRef =
-        st <- get stRef
+        st <- get stRef;
         set stRef (f st)
 
 	in
     	vs <- loadRawCellData;
     	vsRef <- source vs;
-    	dsRef <- source initialDndState;
+    	dsRef <- source initialDndState vs.Langs vs.Feats;
     	return
     		<xml
     			<body onmouseout={mouseOutDoc (vsRef,dsRef)}>
